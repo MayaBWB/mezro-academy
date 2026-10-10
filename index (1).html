@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Juju's wiskundecursus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: lesson list on the left (chips on phone), one lesson at a time on the right; each mini-lesson = explanation + endless practice block with three levels. */
+:root{
+  --bg:#f3f5f2; --paper:#ffffff; --ink:#18261f; --muted:#5b6a62; --line:#d8e0da;
+  --accent:#1f6f54; --accent-soft:#e1efe8; --hi:#f2c14e; --hi-soft:#fdf3d6; --warn:#b5462f;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111a16; --paper:#18231e; --ink:#e6ede9; --muted:#9db0a6; --line:#2c3a33;
+  --accent:#6fcfa6; --accent-soft:#1d3329; --hi:#e9b949; --hi-soft:#2f2a19; --warn:#f08a70; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111a16; --paper:#18231e; --ink:#e6ede9; --muted:#9db0a6; --line:#2c3a33;
+  --accent:#6fcfa6; --accent-soft:#1d3329; --hi:#e9b949; --hi-soft:#2f2a19; --warn:#f08a70; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:17px/1.6 var(--body);padding:0 16px 64px}
+.wrap{max-width:1100px;margin:0 auto}
+header{padding-block:28px 18px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:800 clamp(32px,6vw,52px)/1.03 var(--display);margin:10px 0 10px;letter-spacing:-.01em;text-wrap:balance}
+h1 span{background:linear-gradient(transparent 62%,var(--hi) 62%)}
+.lead{max-width:64ch;color:var(--muted);margin:0}
+.progress{display:flex;align-items:center;gap:12px;margin-top:16px;font:500 13px var(--mono);color:var(--muted);max-width:640px}
+.bar{flex:1;height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;align-items:start}
+.nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);display:grid;gap:4px}
+.nav button{display:grid;grid-template-columns:28px 1fr;gap:2px 8px;align-items:center;text-align:left;border:1px solid transparent;background:transparent;color:var(--ink);font:400 15px/1.3 var(--body);padding:8px 10px;border-radius:8px;cursor:pointer}
+.nav button .nr{grid-row:span 2;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 13px var(--body);background:var(--paper);border:1.5px solid var(--line)}
+.nav button small{font:500 11px var(--mono);color:var(--muted)}
+.nav button[aria-current="true"]{background:var(--paper);border-color:var(--line);font-weight:700}
+.nav button[aria-current="true"] .nr{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.nav button.done .nr{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.nav button:focus-visible,.btn:focus-visible,.opt:focus-visible,.lvbtn:focus-visible,input:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+main{display:grid;gap:22px;min-width:0}
+.lesson-head h2{font:800 clamp(26px,4vw,36px)/1.1 var(--display);margin:0 0 6px;text-wrap:balance}
+.lesson-head p{margin:0;color:var(--muted);max-width:65ch}
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:22px clamp(16px,4vw,30px);display:grid;gap:12px;min-width:0}
+.sheet > .tag{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.sheet h3{font:700 22px/1.2 var(--display);margin:0;text-wrap:balance}
+.sheet h4{font:700 16px/1.3 var(--body);margin:4px 0 0;color:var(--accent)}
+.sheet p{margin:0;max-width:68ch}
+.sheet ul,.sheet ol{margin:0;padding-left:20px;display:grid;gap:4px;max-width:68ch}
+.steps{counter-reset:s;list-style:none;padding:0!important}
+.steps li{counter-increment:s;position:relative;padding-left:34px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--paper);font:700 13px/24px var(--body);text-align:center}
+.ex{background:var(--hi-soft);border-left:4px solid var(--hi);border-radius:0 8px 8px 0;padding:12px 16px;display:grid;gap:6px}
+.ex > b:first-child{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.tip{background:var(--accent-soft);border-radius:8px;padding:10px 14px;font-size:15px;max-width:68ch}
+.m{font:500 15px var(--mono);background:var(--accent-soft);padding:1px 6px;border-radius:4px;white-space:nowrap}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;max-width:100%;justify-self:start}
+table{border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 13px var(--body);background:var(--accent-soft)}
+tr:last-child td,tr:last-child th{border-bottom:0}
+td.n,td{font-variant-numeric:tabular-nums}
+.pv td,.pv th{text-align:center;min-width:52px}
+.ladder{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ladder span{background:var(--accent-soft);border:1px solid var(--accent);border-radius:6px;padding:6px 12px;font-weight:700}
+.ladder i{font:500 13px var(--mono);color:var(--muted);font-style:normal}
+svg.chart{max-width:100%;height:auto}
+svg.chart text{fill:var(--muted);font:12px var(--mono)}
+svg.chart text.v{fill:var(--ink);font-weight:700}
+/* practice */
+.oefen{border-top:2px solid var(--accent);padding-top:14px;margin-top:4px;display:grid;gap:12px}
+.oefen-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.oefen-top strong{font:800 20px var(--display);color:var(--accent)}
+.lvls{display:flex;flex-wrap:wrap;gap:6px}
+.lvbtn{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 10px;font:700 13px var(--body);cursor:pointer}
+.lvbtn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.dots{display:inline-flex;gap:3px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.card{border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:10px;background:var(--bg)}
+.card.ok{border-color:var(--accent);background:var(--accent-soft)}
+.card .q{margin:0;font-weight:700;max-width:68ch}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.card input{font:500 18px var(--mono);width:10em;max-width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.unit{color:var(--muted);font-weight:700}
+.btn{font:700 15px var(--body);padding:9px 16px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--paper);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.small{font-size:13px;padding:6px 12px}
+.opt{font:400 16px var(--body);text-align:left;padding:9px 14px;border-radius:6px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.opt.wrong{border-color:var(--warn);color:var(--warn);text-decoration:line-through}
+.opt.right{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.fb{margin:0;font-weight:700}
+.fb.ok{color:var(--accent)} .fb.no{color:var(--warn)}
+.box{background:var(--paper);border-left:3px solid var(--hi);padding:8px 12px;border-radius:0 6px 6px 0;margin:0}
+.box > b:first-child{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;display:block;color:var(--muted)}
+.lvlup{background:var(--hi-soft);border:1px solid var(--hi);border-radius:8px;padding:8px 12px;font-weight:700}
+.next-lesson{justify-self:start}
+.video{display:flex;gap:10px;align-items:center;background:var(--accent-soft);border-radius:8px;padding:10px 14px;font-size:15px;max-width:68ch}
+.video svg{flex:0 0 auto}
+.video a{color:var(--accent);font-weight:700}
+.muted{color:var(--muted);font-size:14px}
+.study{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.chip{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 12px;font:500 13px var(--mono);color:var(--ink)}
+.minibar{width:60px;height:6px;border-radius:9px;background:var(--line);overflow:hidden;display:inline-block}
+.minibar i{display:block;height:100%;width:0;background:var(--hi)}
+button.chip{cursor:pointer}
+button.chip:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.log{margin-top:12px;max-width:760px}
+.log summary{cursor:pointer;font-weight:700;color:var(--accent)}
+.log > div{margin-top:8px}
+.sessbar{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:2px solid var(--accent);display:flex;justify-content:center;gap:16px;align-items:center;flex-wrap:wrap;z-index:20;font-weight:700}
+.sessbar .time{font:500 22px var(--mono);font-variant-numeric:tabular-nums;color:var(--accent)}
+body.insess{padding-bottom:96px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:700;z-index:25;max-width:calc(100% - 32px);text-align:center}
+.modal{position:fixed;inset:0;background:rgba(10,20,15,.5);display:grid;place-items:center;z-index:30;padding:16px}
+.modal > div{background:var(--paper);color:var(--ink);border-radius:12px;padding:24px;max-width:460px;width:100%;display:grid;gap:12px;max-height:90vh;overflow:auto}
+.modal h3{font:800 24px var(--display);margin:0}
+.modal p{margin:0}
+@media (max-width:800px){
+  .layout{grid-template-columns:1fr}
+  .nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;overflow-x:auto;padding-block:8px;border-bottom:1px solid var(--line);scrollbar-width:none}
+  .nav button{flex:0 0 auto;grid-template-columns:28px auto}
+  .nav button small{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Examencommissie · wetenschappen en wiskunde · wiskunde</div>
+  <h1>Juju's <span>wiskundecursus</span></h1>
+  <p class="lead">Werk de lessen in volgorde af. Lees eerst de uitleg, doe het voorbeeld mee, en oefen dan. Elke oefening is telkens nieuw. Heb je er 3 juist op een niveau, dan ga je naar het volgende. Kijk je naar de uitwerking, dan telt die oefening niet mee: probeer eerst zelf, gebruik dan de hint. Werk in sessies van 15 minuten en probeer elke dag 10 oefeningen juist te hebben.</p>
+  <div class="progress"><span id="pct">0%</span><div class="bar"><i id="barfill"></i></div><span id="cnt"></span></div>
+  <div class="study">
+    <button class="btn" type="button" id="startbtn">Start studiesessie van 15 min</button>
+    <span class="chip"><span id="goal"></span><span class="minibar"><i id="goalfill"></i></span></span>
+    <span class="chip">Reeks: <span id="streak"></span></span>
+    <button class="chip" type="button" id="soundbtn" aria-pressed="true">Geluid aan</button>
+  </div>
+  <details class="log"><summary>Logboek van de studiesessies</summary><div id="log"></div></details>
+</header>
+<div class="layout">
+  <nav class="nav" id="nav" aria-label="Lessen"></nav>
+  <main id="main"></main>
+</div>
+</div>
+
+<div class="sessbar" id="sessbar" hidden><span>Studiesessie</span><span class="time" id="sesstime">15:00</span><span id="sessok">0 juist deze sessie</span><button class="btn ghost small" type="button" id="stopbtn">Stop sessie</button></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="modal" id="modal" hidden><div role="dialog" aria-modal="true" aria-label="Samenvatting"><div class="mbody"></div><div class="row"><button class="btn" type="button" id="newsess">Nieuwe sessie van 15 min</button><button class="btn ghost" type="button" id="closemodal">Sluiten</button></div></div></div>
+<script>
+(function(){
+/* ---------- helpers ---------- */
+function R(a,b){return a+Math.floor(Math.random()*(b-a+1))}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function r6(x){return Math.round(x*1e6)/1e6}
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=b;b=a%b;a=t}return a}
+function fmt(x){x=r6(x);var neg=x<0;x=Math.abs(x);var s=String(x);if(s.indexOf('e')>-1)s=x.toFixed(6).replace(/0+$/,'');var p=s.split('.'),ip=p[0];if(ip.length>4)ip=ip.replace(/\B(?=(\d{3})+(?!\d))/g,' ');return (neg?'−':'')+ip+(p[1]?','+p[1]:'')}
+function eur(x){return '€'+x.toFixed(2).replace('.',',')}
+function M(s){return '<span class="m">'+s+'</span>'}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function parseNum(s){
+  s=String(s).replace(/−/g,'-').replace(/\s/g,'');
+  if(s.indexOf('/')>-1){var p=s.split('/');if(p.length!==2)return NaN;return parseNum(p[0])/parseNum(p[1])}
+  s=s.replace(/[^0-9,.\-]/g,'');
+  if(!s||s==='-')return NaN;
+  if(s.indexOf(',')>-1){s=s.replace(/\./g,'').replace(',','.')}
+  else if(/^\-?\d{1,3}(\.\d{3})+$/.test(s)){s=s.replace(/\./g,'')}
+  return parseFloat(s);
+}
+function mc(q,opts,ansIdx,o){var keys='abcd';var list=opts.map(function(t,i){return{k:keys[i],t:t}});var ans=list[ansIdx].k;shuffle(list);return Object.assign({q:q,opts:list,ans:ans},o)}
+function N(q,ans,o){return Object.assign({q:q,ans:ans},o)}
+function fracCheck(val,simplest){return function(raw){
+  if(raw.indexOf('/')<0){var v=parseNum(raw);if(isNaN(v))return 'Typ eerst een breuk, bv. 3/4.';return Math.abs(v-val)<1e-6?(simplest?'Typ je antwoord als breuk, bv. 3/4.':true):false}
+  var p=raw.replace(/\s/g,'').split('/'),a=parseNum(p[0]),b=parseNum(p[1]);
+  if(isNaN(a)||isNaN(b)||b===0)return 'Typ een breuk zoals 3/4.';
+  if(Math.abs(a/b-val)>1e-6)return false;
+  if(simplest&&gcd(a,b)!==1)return 'Je breuk is juist, maar kan nog eenvoudiger. Deel teller en noemer nog eens door hetzelfde getal.';
+  return true}}
+function table(head,rows){return '<div class="tw"><table><tr>'+head.map(function(h){return '<th>'+h+'</th>'}).join('')+'</tr>'+rows.map(function(r){return '<tr>'+r.map(function(c,i){return i===0?'<th>'+c+'</th>':'<td>'+c+'</td>'}).join('')+'</tr>'}).join('')+'</table></div>'}
+var MAAND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+function lineChart(labels,vals,title){
+  var w=440,h=210,x0=50,x1=420,y0=175,step=(x1-x0)/(vals.length-1);
+  function y(v){return y0-v*6}
+  var g='';for(var t=0;t<=25;t+=5){g+='<line x1="'+x0+'" y1="'+y(t)+'" x2="'+x1+'" y2="'+y(t)+'" stroke="var(--line)"/><text x="'+(x0-12)+'" y="'+(y(t)+4)+'" text-anchor="end">'+t+'</text>'}
+  var pts=vals.map(function(v,i){return (x0+i*step)+','+y(v)}).join(' ');
+  var dots=vals.map(function(v,i){return '<circle cx="'+(x0+i*step)+'" cy="'+y(v)+'" r="4" fill="var(--warn)"/><text class="v" x="'+(x0+i*step)+'" y="'+(y(v)-9)+'" text-anchor="middle">'+v+'</text>'}).join('');
+  var lab=labels.map(function(l,i){return '<text x="'+(x0+i*step)+'" y="'+(y0+20)+'" text-anchor="middle">'+l+'</text>'}).join('');
+  return '<figure style="margin:0"><figcaption style="font-weight:700;font-size:15px">'+title+'</figcaption><svg class="chart" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+title+': '+labels.map(function(l,i){return l+' '+vals[i]}).join(', ')+'">'+g+'<polyline fill="none" stroke="var(--warn)" stroke-width="3" points="'+pts+'"/>'+dots+lab+'</svg></figure>';
+}
+
+/* ---------- lessons ---------- */
+var L=[];
+
+/* LES 1 */
+L.push({t:'Getallen en het rekentoestel',d:'De basis: kommagetallen lezen, maal en gedeeld door 10, negatieve getallen en de volgorde van bewerkingen. Alles wat volgt, bouwt hierop.',parts:[
+{t:'Kommagetallen lezen',u:
+'<p>Elk cijfer in een getal heeft een plaats. Die plaats zegt hoeveel het cijfer waard is.</p>'+
+table(['getal','tientallen','eenheden',',','tienden','honderdsten'],[['34,25','3','4',',','2','5']])+
+'<ul><li>Voor de komma staan de <b>hele</b> getallen.</li><li>Het 1ste cijfer na de komma zijn de <b>tienden</b>. 0,1 is één tiende: een ding in 10 stukken, je hebt er 1.</li><li>Het 2de cijfer na de komma zijn de <b>honderdsten</b>. 0,01 is één honderdste.</li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>0,5 is 5 tienden. Dat is de helft van 1. Een halve liter melk = 0,5 liter.</p><p>2,05 is 2 eenheden, 0 tienden en 5 honderdsten.</p></div>'+
+'<div class="tip">Twee kommagetallen vergelijken? Maak ze even lang door nullen achteraan te zetten. 0,7 = 0,70. Nu zie je dat 0,70 groter is dan 0,65.</div>',
+g:{1:function(){var n=R(1,9);return N('Schrijf als kommagetal: '+n+' tienden.',n/10,{hint:'1 tiende = 0,1. Dus '+n+' tienden = 0,'+n+'.',sol:n+' tienden = '+fmt(n/10)})},
+   2:function(){var e=R(1,9),h=R(1,9);return N('Schrijf als kommagetal: '+e+' eenheden, 0 tienden en '+h+' honderdsten.',r6(e+h/100),{hint:'Eenheden voor de komma. Dan het cijfer van de tienden (0), dan de honderdsten.',sol:e+',0'+h})},
+   3:function(){var a=R(2,9),b=R(10,99);while(b%10===0||Math.abs(b-a*10)<1)b=R(10,99);var A=a/10,B=b/100;return mc('Welk getal is het grootst?',[fmt(A),fmt(B)],A>B?0:1,{hint:'Maak ze even lang: '+fmt(A)+' = 0,'+a+'0.',sol:'0,'+a+'0 en '+fmt(B)+': vergelijk '+a+'0 met '+b+' honderdsten. Het grootst is '+fmt(Math.max(A,B))+'.'})}}},
+{t:'Maal en gedeeld door 10, 100, 1000',u:
+'<p>Vermenigvuldigen met 10, 100 of 1000 is makkelijk: de komma schuift.</p>'+
+'<ul><li><b>× 10</b>: komma 1 plaats naar rechts. <b>× 100</b>: 2 plaatsen. <b>× 1000</b>: 3 plaatsen.</li><li><b>÷ 10</b>: komma 1 plaats naar links. <b>÷ 100</b>: 2 plaatsen. <b>÷ 1000</b>: 3 plaatsen.</li><li>Is er geen plaats meer? Vul aan met nullen.</li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>'+M('3,45 × 100 = 345')+' (komma 2 plaatsen naar rechts)</p><p>'+M('72 ÷ 1000 = 0,072')+' (72 is 72,0 → komma 3 plaatsen naar links, vul aan met een 0)</p></div>'+
+'<div class="tip">Controle: bij × wordt het getal groter, bij ÷ kleiner.</div>',
+g:{1:function(){var n=R(2,99),f=pick([10,100,1000]);return N(n+' × '+fmt(f)+' = ?',n*f,{hint:'Bij een heel getal: zet er evenveel nullen achter als in '+fmt(f)+'.',sol:n+' × '+fmt(f)+' = '+fmt(n*f)})},
+   2:function(){var x=R(101,999)/100,f=pick([10,100,1000]);return N(fmt(x)+' × '+fmt(f)+' = ?',r6(x*f),{hint:'Schuif de komma '+(String(f).length-1)+' plaats(en) naar rechts.',sol:fmt(x)+' × '+fmt(f)+' = '+fmt(r6(x*f))})},
+   3:function(){var x=R(5,9999),f=pick([10,100,1000]);return N(fmt(x)+' ÷ '+fmt(f)+' = ?',r6(x/f),{hint:'Schuif de komma '+(String(f).length-1)+' plaats(en) naar links. Te weinig cijfers? Zet nullen vooraan.',sol:fmt(x)+' ÷ '+fmt(f)+' = '+fmt(r6(x/f))})}}},
+{t:'Negatieve getallen',u:
+'<p>Denk aan een thermometer. Boven 0 is het positief (+5 °C), onder 0 is het negatief (−3 °C). Hoe verder onder 0, hoe kouder.</p>'+
+'<svg class="chart" viewBox="0 0 440 60" role="img" aria-label="Getallenlijn van min 6 tot plus 6"><line x1="20" y1="30" x2="420" y2="30" stroke="var(--muted)" stroke-width="2"/>'+[-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6].map(function(v,i){var x=20+i*400/12;return '<line x1="'+x+'" y1="24" x2="'+x+'" y2="36" stroke="var(--muted)"/><text x="'+x+'" y="54" text-anchor="middle"'+(v===0?' class="v"':'')+'>'+(v<0?'−'+(-v):v)+'</text>'}).join('')+'</svg>'+
+'<ul><li><b>Kouder worden</b> = naar links op de lijn = aftrekken.</li><li><b>Warmer worden</b> = naar rechts = optellen.</li><li><b>Verschil tussen een negatief en een positief getal:</b> tel de afstand tot 0 aan beide kanten op.</li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>Het is 2 °C en het wordt 5 graden kouder: '+M('2 − 5 = −3')+' °C.</p><p>Verschil tussen −4 °C en 6 °C: van −4 tot 0 is 4, van 0 tot 6 is 6. Samen '+M('4 + 6 = 10')+' graden.</p></div>'+
+'<div class="tip">Typ een negatief getal met een minteken ervoor: -3.</div>',
+g:{1:function(){var t=R(1,6),d=R(t+1,t+7);return N('Het is '+t+' °C. Het wordt '+d+' graden kouder. Welke temperatuur is het nu?',t-d,{unit:'°C',hint:'Doe '+t+' − '+d+'. Je gaat voorbij 0, dus de uitkomst is negatief.',sol:t+' − '+d+' = '+fmt(t-d)+' °C'})},
+   2:function(){var a=-R(2,12),b=R(2,15);return N('\'s Nachts is het '+fmt(a)+' °C, overdag '+b+' °C. Hoeveel graden verschil is er?',b-a,{unit:'graden',hint:'Van '+fmt(a)+' tot 0 is '+(-a)+'. Van 0 tot '+b+' is '+b+'. Tel op.',sol:(-a)+' + '+b+' = '+(b-a)+' graden'})},
+   3:function(){var a=-R(3,20),b=R(2,15),plus=Math.random()<.5;return plus?N('Bereken: '+fmt(a)+' + '+b,a+b,{hint:'Start op '+fmt(a)+' en ga '+b+' naar rechts.',sol:fmt(a)+' + '+b+' = '+fmt(a+b)}):N('Bereken: '+fmt(a)+' − '+b,a-b,{hint:'Start op '+fmt(a)+' en ga '+b+' verder naar links.',sol:fmt(a)+' − '+b+' = '+fmt(a-b)})}}},
+{t:'Volgorde van bewerkingen',u:
+'<p>Staan er verschillende bewerkingen in één som, dan volg je deze volgorde:</p>'+
+'<ol class="steps"><li>Eerst wat tussen <b>haakjes</b> staat.</li><li>Dan <b>maal</b> en <b>gedeeld door</b>.</li><li>Pas dan <b>plus</b> en <b>min</b>.</li></ol>'+
+'<div class="ex"><b>Voorbeeld</b><p>'+M('3 + 2 × 10')+'. Eerst maal: '+M('2 × 10 = 20')+'. Dan plus: '+M('3 + 20 = 23')+'.</p><p>Fout is: 3 + 2 = 5, dan × 10 = 50.</p></div>'+
+'<div class="tip">Een eenvoudig rekentoestel rekent soms gewoon van links naar rechts. Reken daarom het maal- of deelstuk eerst apart uit en schrijf het op je kladpapier.</div>',
+g:{1:function(){var a=R(2,20),b=R(2,9),c=R(2,9);return N('Bereken: '+a+' + '+b+' × '+c,a+b*c,{hint:'Eerst '+b+' × '+c+'.',sol:b+' × '+c+' = '+(b*c)+', dan '+a+' + '+(b*c)+' = '+(a+b*c)})},
+   2:function(){var a=R(3,9),b=R(3,9),d=R(2,6),c=d*R(2,9);return N('Bereken: '+a+' × '+b+' − '+c+' ÷ '+d,a*b-c/d,{hint:'Eerst '+a+' × '+b+' en '+c+' ÷ '+d+'. Dan pas min.',sol:(a*b)+' − '+(c/d)+' = '+(a*b-c/d)})},
+   3:function(){var n=R(2,5),p=R(110,290)/100,pay=Math.ceil(n*p/10)*10;if(pay-n*p<.5)pay+=10;return N('Je koopt '+n+' broden van '+eur(p)+' en betaalt met '+eur(pay)+'. Hoeveel krijg je terug?',r6(pay-n*p),{unit:'€',hint:'Eerst wat de broden samen kosten: '+n+' × '+fmt(p)+'. Dan aftrekken van '+pay+'.',sol:n+' × '+fmt(p)+' = '+fmt(r6(n*p))+' → '+pay+' − '+fmt(r6(n*p))+' = '+eur(pay-n*p)})}}}
+]});
+
+/* LES 2 */
+L.push({t:'Breuken',d:'Wat een breuk is, hoe je ze omzet naar een kommagetal, hoe je ze vereenvoudigt en hoe je een breuk van een getal neemt.',parts:[
+{t:'Wat is een breuk?',u:
+'<p>Een breuk is een <b>deel van een geheel</b>. Snij een taart in 8 gelijke stukken en eet er 3: je hebt <b>3/8</b> van de taart gegeten.</p>'+
+'<svg class="chart" viewBox="0 0 200 110" role="img" aria-label="Taart in 8 stukken, 3 gekleurd" style="width:180px">'+(function(){var s='';for(var i=0;i<8;i++){var a1=i*Math.PI/4-Math.PI/2,a2=(i+1)*Math.PI/4-Math.PI/2;s+='<path d="M100 55 L'+(100+48*Math.cos(a1))+' '+(55+48*Math.sin(a1))+' A48 48 0 0 1 '+(100+48*Math.cos(a2))+' '+(55+48*Math.sin(a2))+' Z" fill="'+(i<3?'var(--hi)':'var(--paper)')+'" stroke="var(--ink)" stroke-width="1.5"/>'}return s})()+'</svg>'+
+'<ul><li>Het getal <b>onder</b> de streep is de <b>noemer</b>: in hoeveel gelijke stukken je verdeelt (8).</li><li>Het getal <b>boven</b> de streep is de <b>teller</b>: hoeveel stukken je neemt (3).</li><li>Wat is er nog over? 8 − 3 = 5 stukken, dus 5/8.</li></ul>'+
+'<div class="tip">Typ een breuk met een schuine streep: 3/8.</div>',
+g:{1:function(){var n=pick([4,5,6,8,10,12]),k=R(1,n-1);return N('Een taart is in '+n+' gelijke stukken gesneden. Je eet er '+k+'. Welk deel van de taart heb je gegeten? Typ als breuk.',k/n,{ph:'bv. 2/5',check:fracCheck(k/n,false),hint:'Noemer = aantal stukken in totaal. Teller = aantal stukken dat je eet.',sol:k+'/'+n})},
+   2:function(){var n=pick([5,6,8,10,12]),k=R(1,n-1);return N('Een pizza is in '+n+' stukken gesneden. Er worden er '+k+' opgegeten. Welk deel is er nog over? Typ als breuk.',(n-k)/n,{ph:'bv. 2/5',check:fracCheck((n-k)/n,false),hint:'Hoeveel stukken blijven er over? '+n+' − '+k+'.',sol:(n-k)+'/'+n})},
+   3:function(){var t=pick([20,24,25,30]),p=R(2,t-2);return N('In een klas van '+t+' leerlingen dragen er '+p+' een bril. Welk deel van de klas draagt een bril? Typ als breuk.',p/t,{ph:'bv. 2/5',check:fracCheck(p/t,false),hint:'Het geheel is de hele klas ('+t+'). Het deel zijn de leerlingen met bril.',sol:p+'/'+t})}}},
+{t:'Breuk naar kommagetal',u:
+'<p>De breukstreep betekent <b>gedeeld door</b>. 3/4 is hetzelfde als '+M('3 ÷ 4')+'.</p>'+
+'<ol class="steps"><li>Tik de teller in op je rekentoestel.</li><li>Druk op ÷.</li><li>Tik de noemer in en druk op =.</li></ol>'+
+'<div class="ex"><b>Voorbeeld</b><p>'+M('3/4 → 3 ÷ 4 = 0,75')+'</p><p>'+M('1/2 → 1 ÷ 2 = 0,5')+'</p></div>'+
+'<div class="tip">Deze moet je herkennen zonder rekentoestel: 1/2 = 0,5 · 1/4 = 0,25 · 3/4 = 0,75 · 1/10 = 0,1.</div>',
+g:{1:function(){var f=pick([[1,2],[1,4],[3,4],[1,5],[2,5],[1,10],[7,10]]);return N('Schrijf '+f[0]+'/'+f[1]+' als kommagetal.',f[0]/f[1],{hint:'Doe '+f[0]+' ÷ '+f[1]+'.',sol:f[0]+' ÷ '+f[1]+' = '+fmt(f[0]/f[1])})},
+   2:function(){var f=pick([[3,8],[5,8],[7,20],[9,25],[3,5],[13,20],[1,8]]);return N('Schrijf '+f[0]+'/'+f[1]+' als kommagetal.',f[0]/f[1],{hint:'Doe '+f[0]+' ÷ '+f[1]+'.',sol:f[0]+' ÷ '+f[1]+' = '+fmt(f[0]/f[1])})},
+   3:function(){var m=pick([8,16,25,40,50]),n=R(1,m-1);return N('Op '+m+' dagen regende het '+n+' dagen. Schrijf het deel van de dagen met regen als kommagetal.',r6(n/m),{hint:'Eerst de breuk: '+n+'/'+m+'. Dan '+n+' ÷ '+m+'.',sol:n+'/'+m+' = '+n+' ÷ '+m+' = '+fmt(r6(n/m))})}}},
+{t:'Breuken vereenvoudigen',u:
+'<p>Verschillende breuken kunnen even groot zijn. Een halve pizza = 2 stukken van 4 = 4 stukken van 8: '+M('1/2 = 2/4 = 4/8')+'. Dat noem je <b>gelijkwaardige</b> breuken.</p>'+
+'<h4>De regel</h4><p>Wat je met de noemer doet, doe je ook met de teller. Vermenigvuldigen of delen door hetzelfde getal verandert de waarde niet.</p>'+
+'<h4>Vereenvoudigen</h4><ol class="steps"><li>Zoek een getal waardoor je teller én noemer kan delen.</li><li>Deel allebei door dat getal.</li><li>Herhaal tot het niet meer kan.</li></ol>'+
+'<div class="ex"><b>Voorbeeld</b><p>12/18: allebei deelbaar door 6. '+M('12 ÷ 6 = 2')+' en '+M('18 ÷ 6 = 3')+'. Dus 12/18 = 2/3.</p></div>',
+g:{1:function(){var f=pick([[1,2],[1,3],[1,4],[3,4],[2,3],[2,5]]),m=R(2,5);return N(f[0]+'/'+f[1]+' = ?/'+(f[1]*m)+'. Welk getal komt op het vraagteken?',f[0]*m,{hint:'De noemer werd '+m+' keer zo groot ('+f[1]+' × '+m+'). Doe dat ook met de teller.',sol:f[0]+' × '+m+' = '+(f[0]*m)+', dus '+(f[0]*m)+'/'+(f[1]*m)})},
+   2:function(){var f=pick([[1,2],[1,3],[2,3],[3,4],[2,5],[1,4],[3,5]]),m=R(2,6);return N('Vereenvoudig zo ver mogelijk: '+(f[0]*m)+'/'+(f[1]*m),f[0]/f[1],{ph:'bv. 2/3',check:fracCheck(f[0]/f[1],true),hint:'Teller en noemer zijn allebei deelbaar door '+m+'.',sol:(f[0]*m)+' ÷ '+m+' = '+f[0]+' en '+(f[1]*m)+' ÷ '+m+' = '+f[1]+'. Dus '+f[0]+'/'+f[1]})},
+   3:function(){var f=pick([[3,4],[5,6],[2,3],[7,8],[4,5],[3,7]]),m=pick([6,8,9,10,12]);return N('Vereenvoudig zo ver mogelijk: '+(f[0]*m)+'/'+(f[1]*m),f[0]/f[1],{ph:'bv. 2/3',check:fracCheck(f[0]/f[1],true),hint:'Begin met delen door 2, 3 of 5 en herhaal. Of probeer meteen door '+m+'.',sol:'Deel teller en noemer door '+m+': '+f[0]+'/'+f[1]})}}},
+{t:'Een breuk van een getal',u:
+'<p>Hoeveel is 3/4 van 20? Doe het in twee stappen:</p>'+
+'<ol class="steps"><li><b>Deel door de noemer.</b> Zo vind je één stuk: '+M('20 ÷ 4 = 5')+'.</li><li><b>Maal de teller.</b> Je wil 3 stukken: '+M('5 × 3 = 15')+'.</li></ol>'+
+'<div class="ex"><b>Voorbeeld</b><p>2/5 van de 35 leerlingen komt met de fiets. '+M('35 ÷ 5 = 7')+', '+M('7 × 2 = 14')+' leerlingen.</p></div>',
+g:{1:function(){var d=pick([2,3,4,5,10]),k=R(2,12);return N('Hoeveel is 1/'+d+' van '+(d*k)+'?',k,{hint:'Deel '+(d*k)+' door '+d+'.',sol:(d*k)+' ÷ '+d+' = '+k})},
+   2:function(){var d=pick([3,4,5,6,8]),t=R(2,d-1);while(gcd(t,d)!==1)t=R(2,d-1);var k=R(3,12);return N('Hoeveel is '+t+'/'+d+' van '+(d*k)+'?',t*k,{hint:'Eerst '+(d*k)+' ÷ '+d+', dan × '+t+'.',sol:(d*k)+' ÷ '+d+' = '+k+', '+k+' × '+t+' = '+(t*k)})},
+   3:function(){var d=pick([4,5,8]),t=R(1,d-1);while(gcd(t,d)!==1)t=R(1,d-1);var k=R(4,30),tot=d*k;return N('Een gemeente heeft '+fmt(tot*100)+' hectare grond. '+t+'/'+d+' daarvan is bebouwd. Hoeveel hectare is bebouwd?',t*k*100,{unit:'ha',hint:'Deel door '+d+', vermenigvuldig met '+t+'.',sol:fmt(tot*100)+' ÷ '+d+' = '+fmt(k*100)+' → × '+t+' = '+fmt(t*k*100)+' ha'})}}}
+]});
+
+/* LES 3 */
+L.push({t:'Procenten',d:'Procent betekent "van de honderd". Je leert procenten omzetten, berekenen en vergelijken.',parts:[
+{t:'Wat is een procent?',u:
+'<p>Procent betekent <b>van de honderd</b>. 30% betekent 30 van de 100. Het geheel is altijd <b>100%</b>.</p>'+
+'<svg class="chart" viewBox="0 0 220 220" role="img" aria-label="Rooster van 100 vakjes, 30 gekleurd" style="width:180px">'+(function(){var s='';for(var i=0;i<100;i++){s+='<rect x="'+(10+(i%10)*20)+'" y="'+(10+Math.floor(i/10)*20)+'" width="18" height="18" fill="'+(i<30?'var(--hi)':'var(--paper)')+'" stroke="var(--line)"/>'}return s})()+'</svg>'+
+'<h4>Omzetten</h4><ul><li><b>Procent naar kommagetal:</b> ÷ 100. '+M('30% = 30 ÷ 100 = 0,3')+'</li><li><b>Kommagetal naar procent:</b> × 100. '+M('0,45 × 100 = 45%')+'</li><li><b>Breuk naar procent:</b> eerst naar kommagetal, dan × 100. '+M('3/8 = 0,375 → 37,5%')+'</li></ul>'+
+'<div class="tip">Ken deze uit het hoofd: 50% = 1/2 · 25% = 1/4 · 75% = 3/4 · 10% = 1/10 · 100% = alles.</div>',
+g:{1:function(){var p=pick([10,20,25,50,75,5,1,90]);return N('Schrijf '+p+'% als kommagetal.',p/100,{hint:'Procent naar kommagetal: ÷ 100.',sol:p+' ÷ 100 = '+fmt(p/100)})},
+   2:function(){var d=pick([0.3,0.45,0.08,0.6,0.125,0.02,1.5,0.99]);return N('Schrijf '+fmt(d)+' als procent.',r6(d*100),{unit:'%',hint:'Kommagetal naar procent: × 100.',sol:fmt(d)+' × 100 = '+fmt(r6(d*100))+'%'})},
+   3:function(){var f=pick([[1,4],[3,4],[1,5],[2,5],[3,8],[7,20],[1,8],[9,10],[3,25]]);return N('Schrijf '+f[0]+'/'+f[1]+' als procent.',r6(f[0]/f[1]*100),{unit:'%',hint:'Eerst '+f[0]+' ÷ '+f[1]+', dan × 100.',sol:f[0]+' ÷ '+f[1]+' = '+fmt(f[0]/f[1])+' → '+fmt(r6(f[0]/f[1]*100))+'%'})}}},
+{t:'Een procent van een getal',u:
+'<p>Hoeveel is 20% van 50? Bij procenten betekent "van" altijd <b>maal</b>.</p>'+
+'<ol class="steps"><li>Maak van het procent een kommagetal: '+M('20% = 0,2')+'.</li><li>Vermenigvuldig met het getal: '+M('0,2 × 50 = 10')+'.</li></ol>'+
+'<div class="ex"><b>Voorbeeld met korting</b><p>Een jas kost €80, je krijgt 25% korting. Korting: '+M('0,25 × 80 = 20')+'. Je betaalt '+M('80 − 20 = 60')+' euro.</p></div>',
+g:{1:function(){var p=pick([10,50,25]),n=R(2,20)*20;return N('Hoeveel is '+p+'% van '+n+'?',r6(p/100*n),{hint:p+'% = '+fmt(p/100)+'. Doe '+fmt(p/100)+' × '+n+'.',sol:fmt(p/100)+' × '+n+' = '+fmt(r6(p/100*n))})},
+   2:function(){var p=pick([15,20,30,40,5,12,8]),n=R(3,30)*10;return N('Hoeveel is '+p+'% van '+n+'?',r6(p/100*n),{hint:p+'% = '+fmt(p/100)+'.',sol:fmt(p/100)+' × '+n+' = '+fmt(r6(p/100*n))})},
+   3:function(){var k=R(0,2);if(k===0){var N1=R(80,130)*100000,p=R(3,12);return N('België heeft ongeveer '+fmt(N1)+' inwoners. Stel dat '+p+'% ouder is dan 80. Hoeveel mensen zijn dat?',r6(N1*p/100),{hint:p+'% = '+fmt(p/100)+'.',sol:fmt(p/100)+' × '+fmt(N1)+' = '+fmt(r6(N1*p/100))})}
+     if(k===1){var pr=R(4,20)*10,kort=pick([10,20,25,30,40,50]);return N('Een paar schoenen kost '+eur(pr)+'. Je krijgt '+kort+'% korting. Hoeveel betaal je?',r6(pr*(1-kort/100)),{unit:'€',hint:'Bereken eerst de korting ('+kort+'% van '+pr+'). Trek die af van de prijs.',sol:'Korting: '+fmt(kort/100)+' × '+pr+' = '+fmt(pr*kort/100)+'. Betalen: '+pr+' − '+fmt(pr*kort/100)+' = '+eur(pr*(1-kort/100))})}
+     var ha=R(20,90)*100,p2=pick([12,18,25,35,44]);return N('Een gemeente is '+fmt(ha)+' hectare groot. '+p2+'% is verhard (beton, asfalt). Hoeveel hectare is verhard?',r6(ha*p2/100),{unit:'ha',hint:p2+'% van '+fmt(ha)+' = '+fmt(p2/100)+' × '+fmt(ha)+'.',sol:fmt(p2/100)+' × '+fmt(ha)+' = '+fmt(r6(ha*p2/100))+' ha'})}}},
+{t:'Hoeveel procent is het?',u:
+'<p>6 van de 24 kinderen hebben blauwe ogen. Hoeveel procent is dat?</p>'+
+'<ol class="steps"><li>Deel het <b>deel</b> door het <b>totaal</b>: '+M('6 ÷ 24 = 0,25')+'.</li><li>Maal 100: '+M('0,25 × 100 = 25%')+'.</li></ol>'+
+'<div class="tip">Ezelsbruggetje: <b>deel ÷ totaal × 100</b>. Let op: het totaal is altijd de hele groep waarover de vraag gaat.</div>',
+g:{1:function(){var t=pick([10,20,50,100]),d=R(1,t-1);return N(d+' van de '+t+' leerlingen zijn ziek. Hoeveel procent is dat?',r6(d/t*100),{unit:'%',hint:'Doe '+d+' ÷ '+t+' en daarna × 100.',sol:d+' ÷ '+t+' = '+fmt(d/t)+' → '+fmt(r6(d/t*100))+'%'})},
+   2:function(){var t=pick([20,25,40,50]),d=R(1,t-1);return N(d+' van de '+t+' toestellen in een winkel hebben energielabel A. Hoeveel procent is dat?',r6(d/t*100),{unit:'%',hint:'Deel ÷ totaal × 100.',sol:d+' ÷ '+t+' = '+fmt(r6(d/t))+' → '+fmt(r6(d/t*100))+'%'})},
+   3:function(){var t=pick([20,25,40,50]),m=R(2,t-2),j=t-m;return N('In een klas zitten '+j+' jongens en '+m+' meisjes. Hoeveel procent van de klas zijn meisjes?',r6(m/t*100),{unit:'%',hint:'Het totaal is jongens + meisjes = '+t+'.',sol:m+' ÷ '+t+' = '+fmt(r6(m/t))+' → '+fmt(r6(m/t*100))+'%'})}}},
+{t:'Breuken, kommagetallen en procenten vergelijken',u:
+'<p>Welke is groter: 3/5, 0,58 of 62%? Je kan ze pas vergelijken als ze in <b>dezelfde vorm</b> staan.</p>'+
+'<ol class="steps"><li>Zet alles om naar een kommagetal. 3/5 = 0,6 · 0,58 · 62% = 0,62.</li><li>Maak ze even lang: 0,60 · 0,58 · 0,62.</li><li>Vergelijk: 0,62 is het grootst, dus 62%.</li></ol>',
+g:{1:function(){return cmp(0.15)},2:function(){return cmp(0.06)},3:function(){return cmp(0.02)}}}
+]});
+function cmp(spread){
+  var fr=pick([[1,2],[1,4],[3,4],[2,5],[3,5],[1,5],[3,8],[7,10],[4,5]]),base=fr[0]/fr[1];
+  var d=r6(Math.max(0.01,Math.min(0.99,base+(Math.random()<.5?-1:1)*spread*R(1,2)))),p=r6(Math.max(0.01,Math.min(0.99,base+(Math.random()<.5?-1:1)*spread*R(1,3)/2)));
+  if(Math.abs(d-base)<.005)d=r6(base+spread);if(Math.abs(p-base)<.005||Math.abs(p-d)<.005)p=r6(base-spread);
+  d=Math.round(d*100)/100;p=Math.round(p*100)/100;
+  var vals=[base,d,p],labels=[fr[0]+'/'+fr[1],fmt(d),fmt(p*100)+'%'],mx=vals.indexOf(Math.max.apply(null,vals));
+  return mc('Welke is het grootst?',labels,mx,{hint:'Zet alles om naar een kommagetal.',sol:fr[0]+'/'+fr[1]+' = '+fmt(base)+' · '+fmt(d)+' · '+fmt(p*100)+'% = '+fmt(p)+'. Het grootst is '+labels[mx]+'.'});
+}
+
+/* LES 4 */
+L.push({t:'Verhoudingen en kaartschaal',d:'Rekenen met een verhoudingstabel en afstanden berekenen op een kaart. Die heb je nodig bij aardrijkskunde.',parts:[
+{t:'De verhoudingstabel',u:
+'<p>2 kg appels kost €3. Hoeveel kost 6 kg? Zet het in een tabel:</p>'+
+table(['gewicht (kg)','2','6'],[['prijs (€)','3','?']])+
+'<ol class="steps"><li>Kijk hoe je van 2 naar 6 gaat: '+M('× 3')+'.</li><li>Doe hetzelfde onderaan: '+M('3 × 3 = 9')+'. 6 kg kost €9.</li></ol>'+
+'<h4>Regel van drie</h4><p>Lukt het niet in één stap? Reken eerst uit hoeveel <b>1</b> kost. Julie verdient €108 voor 6 uur. 1 uur: '+M('108 ÷ 6 = 18')+'. 7 uur: '+M('18 × 7 = 126')+'.</p>'+
+'<div class="tip">Wat je bovenaan doet, doe je ook onderaan.</div>',
+g:{1:function(){var a=R(1,5),u=R(1,4),k=R(2,4);return N(a+' kg kost €'+(a*u)+'. Hoeveel kost '+(a*k)+' kg?',a*u*k,{unit:'€',hint:'Van '+a+' naar '+(a*k)+' is × '+k+'. Doe dat ook met de prijs.',sol:(a*u)+' × '+k+' = €'+(a*u*k)})},
+   2:function(){var b=R(1,4),u=R(1,8)*0.5,k=R(2,5),a=b*k;return N(a+' liter verf kost '+eur(a*u)+'. Hoeveel kost '+b+' liter?',r6(b*u),{unit:'€',hint:'Van '+a+' naar '+b+' is ÷ '+k+'.',sol:fmt(a*u)+' ÷ '+k+' = '+eur(b*u)})},
+   3:function(){var h=R(3,8),rate=R(10,20),h2=R(2,10);while(h2===h)h2=R(2,10);return N('Je verdient €'+(h*rate)+' voor '+h+' uur werk. Hoeveel verdien je voor '+h2+' uur?',h2*rate,{unit:'€',hint:'Reken eerst uit hoeveel je verdient voor 1 uur.',sol:'1 uur: '+(h*rate)+' ÷ '+h+' = '+rate+'. '+h2+' uur: '+rate+' × '+h2+' = €'+(h2*rate)})}}},
+{t:'Kaartschaal',u:
+'<p>Een kaart is een verkleining. De <b>schaal</b> zegt hoeveel keer. Schaal '+M('1 : 50 000')+' betekent: 1 cm op de kaart is 50 000 cm in het echt.</p>'+
+'<ol class="steps"><li>Meet de afstand op de kaart in cm.</li><li>Vermenigvuldig met het getal na de dubbelpunt. Nu heb je cm in het echt.</li><li>Zet om naar km: ÷ 100 000 (want 1 km = 100 000 cm).</li></ol>'+
+'<div class="ex"><b>Voorbeeld</b><p>Schaal 1 : 50 000, op de kaart 6 cm. '+M('6 × 50 000 = 300 000 cm')+'. '+M('300 000 ÷ 100 000 = 3 km')+'.</p></div>'+
+'<p><b>Grootschalig</b> = kleine noemer (1 : 10 000): klein gebied, veel details, bv. een stadsplan. <b>Kleinschalig</b> = grote noemer (1 : 10 000 000): groot gebied, weinig details, bv. een wereldkaart.</p>'+
+'<p>Een <b>lijnschaal</b> is een balkje op de kaart, bv. |——| = 1 km. Leg je afstand ernaast en tel hoeveel keer het past.</p>',
+g:{1:function(){var S=pick([100000,50000,25000,10000]),d=R(1,9);return N('Op een kaart met schaal 1 : '+fmt(S)+' meet je '+d+' cm. Hoeveel cm is dat in het echt?',d*S,{unit:'cm',hint:'Doe '+d+' × '+fmt(S)+'.',sol:d+' × '+fmt(S)+' = '+fmt(d*S)+' cm'})},
+   2:function(){var S=pick([100000,50000,25000,200000]),d=R(2,18)/2;return N('Op een kaart met schaal 1 : '+fmt(S)+' meet je '+fmt(d)+' cm. Hoeveel km is dat in het echt?',r6(d*S/100000),{unit:'km',hint:'Eerst × '+fmt(S)+' (cm in het echt), dan ÷ 100 000 (naar km).',sol:fmt(d)+' × '+fmt(S)+' = '+fmt(d*S)+' cm = '+fmt(r6(d*S/100000))+' km'})},
+   3:function(){if(Math.random()<.5){var S=pick([100000,200000,250000,500000,1000000]),d=R(2,12),K=d*S/100000;return N('Twee steden liggen '+fmt(K)+' km uit elkaar. Op de kaart is dat '+d+' cm. Wat is de schaal? Typ het getal na "1 :".',S,{hint:'Zet '+fmt(K)+' km om naar cm (× 100 000). Deel door '+d+'.',sol:fmt(K)+' km = '+fmt(K*100000)+' cm. '+fmt(K*100000)+' ÷ '+d+' = '+fmt(S)+'. Schaal 1 : '+fmt(S)})}
+     return mc('Welke kaart is het meest grootschalig (toont het kleinste gebied met de meeste details)?',['1 : 10 000','1 : 250 000','1 : 5 000 000'],0,{hint:'Grootschalig = kleine noemer.',sol:'1 : 10 000 heeft de kleinste noemer, dus het meest grootschalig.'})}}}
+]});
+
+/* LES 5 */
+L.push({t:'Afronden en schatten',d:'Lange getallen afronden, slim afronden in een situatie, en vooraf schatten om fouten te zien.',parts:[
+{t:'Afronden',u:
+'<ol class="steps"><li>Kies tot waar je afrondt. Bv. 1 cijfer na de komma: 7,<b>3</b>684.</li><li>Kijk naar het cijfer <b>meteen daarna</b>: 6.</li><li>Is dat 0, 1, 2, 3 of 4? Het cijfer ervoor blijft. Is het 5, 6, 7, 8 of 9? Het cijfer ervoor gaat 1 omhoog. Hier: 7,4.</li></ol>'+
+'<div class="ex"><b>Voorbeeld</b><p>12,48 op een heel getal: kijk naar de 4 → blijft → 12.</p><p>3,1459 op 2 cijfers na de komma: kijk naar de 5 → omhoog → 3,15.</p></div>',
+g:{1:function(){var x=R(101,999)/10;if(x%1===0)x+=0.3;x=r6(x);return N('Rond '+fmt(x)+' af op een heel getal.',Math.round(x),{hint:'Kijk naar het cijfer na de komma: '+String(x).split('.')[1][0]+'.',sol:fmt(Math.round(x))})},
+   2:function(){var x=R(1001,99999)/1000;var a=Math.round(x*10+1e-9)/10;return N('Rond '+fmt(x)+' af op 1 cijfer na de komma.',a,{tol:1e-6,hint:'Kijk naar het 2de cijfer na de komma.',sol:fmt(a)})},
+   3:function(){var x=R(10001,999999)/10000;var a=Math.round(x*100+1e-9)/100;return N('Je rekentoestel geeft '+fmt(x)+' euro. Rond af op 2 cijfers na de komma (eurocent).',a,{unit:'€',tol:1e-6,hint:'Kijk naar het 3de cijfer na de komma.',sol:eur(a)})}}},
+{t:'Zinvol afronden',u:
+'<p>Denk na over <b>wat</b> je telt voor je afrondt.</p><ul><li><b>Geld:</b> 2 cijfers na de komma (eurocent).</li><li><b>Mensen, dieren, bussen:</b> een heel getal. Er bestaat geen halve bus.</li><li><b>Genoeg plaats nodig?</b> (bussen, kamers, dozen om alles in te stoppen) Rond altijd <b>naar boven</b>.</li><li><b>Hoeveel volle?</b> (volle dozen, volle flessen) Rond altijd <b>naar beneden</b>.</li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>230 leerlingen, 50 per bus: '+M('230 ÷ 50 = 4,6')+'. Met 4 bussen blijven er leerlingen achter, dus <b>5 bussen</b>.</p></div>',
+g:{1:function(){var Lr=R(81,299);if(Lr%50===0)Lr+=7;return N('Een school met '+Lr+' leerlingen gaat op uitstap. In een bus passen 50 leerlingen. Hoeveel bussen moet je bestellen?',Math.ceil(Lr/50),{unit:'bussen',hint:Lr+' ÷ 50 = '+fmt(r6(Lr/50))+'. Moet iedereen mee?',sol:fmt(r6(Lr/50))+' → naar boven: '+Math.ceil(Lr/50)+' bussen'})},
+   2:function(){var E=R(25,100);if(E%12===0)E+=5;return N('Je hebt '+E+' eieren. In een doos gaan er 12. Hoeveel <b>volle</b> dozen kan je maken?',Math.floor(E/12),{unit:'dozen',hint:E+' ÷ 12 = '+fmt(r6(E/12))+'. Een halve doos is niet vol.',sol:fmt(r6(E/12))+' → naar beneden: '+Math.floor(E/12)+' volle dozen'})},
+   3:function(){var p=pick([3,6,7]),T=R(2000,9000)/100;var a=Math.round(T/p*100)/100;return N('Een rekening van '+eur(T)+' wordt eerlijk verdeeld over '+p+' vrienden. Hoeveel betaalt ieder? Rond zinvol af.',a,{unit:'€',tol:0.0051,hint:'Doe '+fmt(T)+' ÷ '+p+'. Geld rond je af op 2 cijfers na de komma.',sol:fmt(T)+' ÷ '+p+' = '+fmt(r6(T/p))+' → '+eur(a)})}}},
+{t:'Schatten',u:
+'<p>Schatten = snel ongeveer uitrekenen met <b>ronde getallen</b>. Zo controleer je of je rekentoestel een vreemde uitkomst geeft omdat je verkeerd typte.</p>'+
+'<ol class="steps"><li>Rond elk getal af naar een makkelijk getal: 198 → 200, 31 → 30.</li><li>Reken uit: '+M('200 × 30 = 6000')+'.</li><li>Vergelijk met je rekentoestel. Krijg je 61 380? Dan klopt er iets niet.</li></ol>',
+g:{1:function(){return est(1)},2:function(){return est(2)},3:function(){return est(3)}}}
+]});
+function est(l){
+  var a,b,ra,rb,op;
+  if(l===1){ra=R(2,9)*10;rb=R(2,9);a=ra+pick([-2,-1,1,2]);b=rb;op='×'}
+  else if(l===2){ra=R(2,9)*100;rb=R(2,9)*10;a=ra+pick([-3,-2,2,3]);b=rb+pick([-1,1]);op='×'}
+  else{rb=R(2,9);var q=R(2,9)*100;ra=rb*q;a=ra+pick([-8,-5,6,9]);b=rb;op='÷'}
+  var e=op==='×'?ra*rb:ra/rb;
+  return mc('Schat: '+fmt(a)+' '+op+' '+fmt(b)+' is ongeveer ...',[fmt(e),fmt(e*10),fmt(e/10)],0,{hint:'Maak er ronde getallen van: '+fmt(ra)+' '+op+' '+fmt(rb)+'.',sol:fmt(ra)+' '+op+' '+fmt(rb)+' = '+fmt(e)});
+}
+
+/* LES 6 */
+var UL={km:1e6,m:1e3,cm:10,mm:1};
+L.push({t:'Lengte en oppervlakte',d:'Eenheden omzetten: km, m, cm, mm, en m² en km².',parts:[
+{t:'Lengte omzetten',u:
+'<div class="ladder"><span>km</span><i>× 1000 →</i><span>m</span><i>× 100 →</i><span>cm</span><i>× 10 →</i><span>mm</span></div>'+
+'<ul><li>Van <b>groot naar klein</b> (naar rechts): <b>vermenigvuldigen</b>. Het getal wordt groter.</li><li>Van <b>klein naar groot</b> (naar links): <b>delen</b>. Het getal wordt kleiner.</li><li>Sla je een stap over? Doe beide stappen na elkaar. km naar cm: '+M('× 1000 × 100 = × 100 000')+'.</li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>'+M('3 km = 3 × 1000 = 3000 m')+'</p><p>'+M('250 cm = 250 ÷ 100 = 2,5 m')+'</p></div>'+
+'<div class="tip">Controleer met je gezond verstand: 3 km is een lange wandeling. In meter moet dat een groot getal zijn.</div>',
+g:{1:function(){var p=pick([['km','m'],['m','cm'],['cm','mm']]),v=R(2,40);return conv(v,p[0],p[1])},
+   2:function(){var p=pick([['m','km'],['cm','m'],['mm','cm']]),v=R(15,4000);return conv(v,p[0],p[1])},
+   3:function(){var p=pick([['km','cm'],['mm','m'],['cm','km'],['m','mm']]),v=p[0]==='cm'?R(2,90)*1000:p[0]==='mm'?R(50,9000):R(2,30)/2;return conv(v,p[0],p[1])}}},
+{t:'Oppervlakte: m² en km²',u:
+'<p>Oppervlakte is hoeveel plaats iets inneemt op de grond. Een vierkant van 1 m op 1 m is <b>1 m²</b>. Een vierkant van 1 km op 1 km is <b>1 km²</b>.</p>'+
+'<p>Hoeveel m² past in 1 km²? '+M('1000 m × 1000 m = 1 000 000 m²')+'.</p>'+
+'<ul><li>km² naar m²: <b>× 1 000 000</b></li><li>m² naar km²: <b>÷ 1 000 000</b></li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>'+M('2,5 km² = 2,5 × 1 000 000 = 2 500 000 m²')+'</p><p>Op Geopunt meet je een veld van 350 000 m². '+M('350 000 ÷ 1 000 000 = 0,35 km²')+'</p></div>',
+g:{1:function(){var v=R(2,9);return N(v+' km² = ? m²',v*1e6,{unit:'m²',hint:'km² naar m²: × 1 000 000.',sol:v+' × 1 000 000 = '+fmt(v*1e6)+' m²'})},
+   2:function(){var v=R(1,99)*100000;return N(fmt(v)+' m² = ? km²',r6(v/1e6),{unit:'km²',hint:'m² naar km²: ÷ 1 000 000.',sol:fmt(v)+' ÷ 1 000 000 = '+fmt(r6(v/1e6))+' km²'})},
+   3:function(){if(Math.random()<.5){var v=R(11,95)/10;return N('Een bos is '+fmt(v)+' km² groot. Hoeveel m² is dat?',r6(v*1e6),{unit:'m²',hint:'× 1 000 000.',sol:fmt(v)+' × 1 000 000 = '+fmt(r6(v*1e6))+' m²'})}var w=R(12,95)*10000;return N('Op Geopunt meet je een park van '+fmt(w)+' m². Hoeveel km² is dat?',r6(w/1e6),{unit:'km²',hint:'÷ 1 000 000.',sol:fmt(w)+' ÷ 1 000 000 = '+fmt(r6(w/1e6))+' km²'})}}}
+]});
+function conv(v,a,b){var f=UL[a]/UL[b],ans=r6(v*f),bigger=f>1;return N(fmt(v)+' '+a+' = ? '+b,ans,{unit:b,hint:(bigger?'Van groot naar klein: vermenigvuldigen met '+fmt(f):'Van klein naar groot: delen door '+fmt(1/f))+'.',sol:fmt(v)+(bigger?' × '+fmt(f):' ÷ '+fmt(1/f))+' = '+fmt(ans)+' '+b})}
+
+/* LES 7 */
+L.push({t:'Tijd en snelheid',d:'Uren, minuten en seconden omzetten, km/h en m/s, en afstand berekenen.',parts:[
+{t:'Tijd omzetten',u:
+'<div class="ladder"><span>uur (h)</span><i>× 60 →</i><span>minuten (min)</span><i>× 60 →</i><span>seconden (s)</span></div>'+
+'<p>Tijd werkt met <b>60</b>, niet met 100. Dat is de grootste valkuil.</p>'+
+'<div class="ex"><b>Opgelet</b><p>1,5 h is <b>niet</b> 1 h 50 min. Het is 1 h en een half uur: '+M('0,5 × 60 = 30 min')+'. Dus 1,5 h = 1 h 30 min = 90 min.</p></div>'+
+'<ul><li>Uur naar minuten: × 60. Minuten naar uur: ÷ 60.</li><li>2 h 15 min naar minuten: '+M('2 × 60 + 15 = 135 min')+'.</li></ul>',
+g:{1:function(){if(Math.random()<.5){var h=R(2,9);return N(h+' h = ? min',h*60,{unit:'min',hint:'1 h = 60 min. Doe '+h+' × 60.',sol:h+' × 60 = '+(h*60)+' min'})}var m=R(2,15);return N(m+' min = ? s',m*60,{unit:'s',hint:'1 min = 60 s.',sol:m+' × 60 = '+(m*60)+' s'})},
+   2:function(){var h=pick([0.25,0.5,0.75,1.5,2.5,1.25,0.1]);if(Math.random()<.5)return N(fmt(h)+' h = ? min',r6(h*60),{unit:'min',hint:'Doe '+fmt(h)+' × 60.',sol:fmt(h)+' × 60 = '+fmt(r6(h*60))+' min'});return N(fmt(h*60)+' min = ? h (als kommagetal)',h,{unit:'h',hint:'Doe ÷ 60.',sol:fmt(h*60)+' ÷ 60 = '+fmt(h)+' h'})},
+   3:function(){var h=R(1,4),m=pick([15,30,45,6,12]);if(Math.random()<.5)return N(h+' h '+m+' min = ? min',h*60+m,{unit:'min',hint:'Eerst '+h+' × 60, dan + '+m+'.',sol:h+' × 60 + '+m+' = '+(h*60+m)+' min'});var t=h*60+m;return N(t+' min = ? h (als kommagetal)',r6(t/60),{unit:'h',hint:'Doe '+t+' ÷ 60.',sol:t+' ÷ 60 = '+fmt(r6(t/60))+' h'})}}},
+{t:'km/h en m/s',u:
+'<p>Snelheid zegt welke afstand je aflegt in een bepaalde tijd. <b>km/h</b>: kilometer per uur. <b>m/s</b>: meter per seconde.</p>'+
+'<ul><li><b>km/h naar m/s:</b> ÷ 3,6</li><li><b>m/s naar km/h:</b> × 3,6</li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>Een auto rijdt 90 km/h. '+M('90 ÷ 3,6 = 25 m/s')+'. Elke seconde rijdt hij 25 meter.</p></div>'+
+'<div class="tip">Waarom 3,6? In 1 uur zitten 3600 seconden en in 1 km zitten 1000 meter. 3600 ÷ 1000 = 3,6. Controle: het getal in km/h is altijd groter dan in m/s.</div>',
+g:{1:function(){var v=pick([18,36,54,72,90,108]);return N(v+' km/h = ? m/s',r6(v/3.6),{unit:'m/s',hint:'km/h naar m/s: ÷ 3,6.',sol:v+' ÷ 3,6 = '+fmt(r6(v/3.6))+' m/s'})},
+   2:function(){var v=R(2,30);return N(v+' m/s = ? km/h',r6(v*3.6),{unit:'km/h',hint:'m/s naar km/h: × 3,6.',sol:v+' × 3,6 = '+fmt(r6(v*3.6))+' km/h'})},
+   3:function(){if(Math.random()<.5){var v=pick([126,144,180,216,252]);return N('Een orkaan heeft windsnelheden van '+v+' km/h. Hoeveel is dat in m/s?',r6(v/3.6),{unit:'m/s',hint:'÷ 3,6.',sol:v+' ÷ 3,6 = '+fmt(r6(v/3.6))+' m/s'})}var s=pick([8,10,12,15]);return N('Een fietser rijdt '+s+' m/s. Mag hij in een zone van 30 km/h? Bereken zijn snelheid in km/h.',r6(s*3.6),{unit:'km/h',hint:'× 3,6.',sol:s+' × 3,6 = '+fmt(r6(s*3.6))+' km/h'})}}},
+{t:'Afstand, snelheid en tijd',u:
+'<p>Rij je 50 km/h, dan rij je in 1 uur 50 km, in 2 uur 100 km.</p>'+
+'<ul><li><b>afstand = snelheid × tijd</b></li><li><b>tijd = afstand ÷ snelheid</b></li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>Een trein rijdt 120 km/h gedurende 30 min. Zet eerst 30 min om naar uur: '+M('30 ÷ 60 = 0,5 h')+'. Afstand: '+M('120 × 0,5 = 60 km')+'.</p></div>'+
+'<div class="tip">Snelheid in km/h? Dan moet de tijd in <b>uur</b>. Eerst omzetten.</div>',
+g:{1:function(){var v=R(4,12)*10,t=R(2,5);return N('Een auto rijdt '+t+' uur aan '+v+' km/h. Hoeveel km legt hij af?',v*t,{unit:'km',hint:'afstand = snelheid × tijd.',sol:v+' × '+t+' = '+(v*t)+' km'})},
+   2:function(){var v=pick([60,80,90,100,120,720]),m=pick([15,30,45,90]);return N((v===720?'Een tsunami beweegt aan ':'Een trein rijdt ')+v+' km/h. Hoeveel km legt '+(v===720?'hij':'de trein')+' af in '+m+' minuten?',r6(v*m/60),{unit:'km',hint:'Zet '+m+' min eerst om naar uur: ÷ 60. Dan × '+v+'.',sol:m+' min = '+fmt(r6(m/60))+' h → '+v+' × '+fmt(r6(m/60))+' = '+fmt(r6(v*m/60))+' km'})},
+   3:function(){var v=pick([60,90,120]),m=pick([20,30,40,60,90]),d=v*m/60;return N('Je moet '+fmt(d)+' km rijden aan '+v+' km/h. Hoeveel <b>minuten</b> duurt dat?',m,{unit:'min',hint:'tijd = afstand ÷ snelheid. Je krijgt uren. Zet om naar minuten: × 60.',sol:fmt(d)+' ÷ '+v+' = '+fmt(r6(m/60))+' h → × 60 = '+m+' min'})}}}
+]});
+
+/* LES 8 */
+L.push({t:'Tabellen en grafieken',d:'Informatie aflezen uit tabellen, diagrammen en grafieken. Dit komt bij heel veel examenvragen terug.',parts:[
+{t:'Een tabel lezen en frequentie',u:
+'<p>Voor je een vraag over een tabel beantwoordt, lees je eerst:</p><ol class="steps"><li>De <b>titel</b>: waarover gaat het?</li><li>Wat staat er in elke <b>kolom</b> en <b>rij</b>?</li><li>De <b>eenheid</b>: aantal, %, °C, euro ...</li></ol>'+
+'<h4>Frequentie</h4><ul><li><b>Absolute frequentie</b> = hoe vaak iets voorkomt. Gewoon het aantal.</li><li><b>Relatieve frequentie</b> = welk deel van het totaal, meestal in procent: '+M('aantal ÷ totaal × 100')+'.</li></ul>'+
+table(['bloedgroep','O','A','B','AB','totaal'],[['aantal leerlingen','11','10','3','1','25']])+
+'<div class="ex"><b>Voorbeeld</b><p>Absolute frequentie van O: 11. Relatieve frequentie van O: '+M('11 ÷ 25 × 100 = 44%')+'.</p></div>',
+g:{1:function(){var t=bt(pick([20,25,40,50]));var g=pick(['O','A','B','AB']);return N(t.html+'Hoeveel leerlingen hebben bloedgroep '+g+'?',t.v[g],{hint:'Zoek de kolom '+g+'.',sol:t.v[g]})},
+   2:function(){var t=bt(pick([20,25,40,50]));return N(t.html+'Hoeveel leerlingen hebben bloedgroep A of B?',t.v.A+t.v.B,{hint:'Tel de aantallen van A en B op.',sol:t.v.A+' + '+t.v.B+' = '+(t.v.A+t.v.B)})},
+   3:function(){var t=bt(pick([20,25,40,50]));var g=pick(['O','A','B']);return N(t.html+'Wat is de relatieve frequentie van bloedgroep '+g+'?',r6(t.v[g]/t.tot*100),{unit:'%',hint:'Het totaal is '+t.tot+'. Doe '+t.v[g]+' ÷ '+t.tot+' × 100.',sol:t.v[g]+' ÷ '+t.tot+' = '+fmt(r6(t.v[g]/t.tot))+' → '+fmt(r6(t.v[g]/t.tot*100))+'%'})}}},
+{t:'Een lijndiagram lezen',u:
+'<p>Een lijndiagram toont hoe iets <b>verandert in de tijd</b>, bv. de temperatuur per maand.</p>'+
+lineChart(['jan','feb','mrt','apr','mei','jun'],[3,4,7,10,14,17],'Gemiddelde temperatuur in Brussel (°C)')+
+'<ul><li><b>Stijgen:</b> de lijn gaat omhoog. <b>Dalen:</b> de lijn gaat omlaag. <b>Constant:</b> de lijn blijft vlak.</li><li><b>Maximum:</b> het hoogste punt. <b>Minimum:</b> het laagste punt.</li><li><b>Verschil</b> tussen twee punten: groot min klein.</li></ul>',
+g:{1:function(){var c=lc(false);var i=R(0,5);return N(c.html+'Hoeveel °C is het in '+c.lab[i]+'?',c.v[i],{unit:'°C',hint:'Zoek '+c.lab[i]+' onderaan en kijk naar het punt erboven.',sol:c.v[i]+' °C'})},
+   2:function(){var c=lc(false);var mx=Math.max.apply(null,c.v),mn=Math.min.apply(null,c.v);return N(c.html+'Hoeveel graden verschil is er tussen het maximum en het minimum?',mx-mn,{unit:'°C',hint:'Zoek het hoogste en het laagste punt. Groot min klein.',sol:mx+' − '+mn+' = '+(mx-mn)+' °C'})},
+   3:function(){var c=lc(true);var i=c.ci;var a=c.v[i],b=c.v[i+1];var ans=b>a?0:b<a?1:2;return mc(c.html+'Wat doet de temperatuur van '+c.lab[i]+' naar '+c.lab[i+1]+'?',['Ze stijgt','Ze daalt','Ze blijft constant'],ans,{hint:'Vergelijk de twee punten: '+a+' en '+b+'.',sol:a+' → '+b+': '+['ze stijgt','ze daalt','ze blijft constant'][ans]+'.'})}}},
+{t:'Een kruistabel lezen',u:
+'<p>Een kruistabel toont <b>twee kenmerken tegelijk</b>. Je vindt een getal door de rij en de kolom te kruisen.</p>'+
+table(['sport elke week?','ja','nee','totaal'],[['jongens','9','3','12'],['meisjes','6','6','12'],['totaal','15','9','24']])+
+'<div class="ex"><b>Voorbeeld</b><p>Hoeveel meisjes sporten? Rij "meisjes", kolom "ja": 6.</p><p>Hoeveel procent van de <b>jongens</b> sport? Het totaal is nu alleen de jongens (12): '+M('9 ÷ 12 × 100 = 75%')+'.</p></div>'+
+'<div class="tip">Lees goed over welke groep de vraag gaat. "Van de jongens" betekent: het totaal is het aantal jongens.</div>',
+g:{1:function(){var k=kt();var r=pick(['jongens','meisjes']),c=pick(['ja','nee']);return N(k.html+'Hoeveel '+r+' antwoordden "'+c+'"?',k.v[r][c],{hint:'Rij "'+r+'", kolom "'+c+'".',sol:k.v[r][c]})},
+   2:function(){var k=kt();var c=pick(['ja','nee']);return N(k.html+'Hoeveel leerlingen in totaal antwoordden "'+c+'"?',k.v.jongens[c]+k.v.meisjes[c],{hint:'Tel jongens en meisjes in de kolom "'+c+'" op.',sol:k.v.jongens[c]+' + '+k.v.meisjes[c]+' = '+(k.v.jongens[c]+k.v.meisjes[c])})},
+   3:function(){var k=kt();var r=pick(['jongens','meisjes']);var t=k.v[r].ja+k.v[r].nee;return N(k.html+'Hoeveel procent van de '+r+' sport elke week?',r6(k.v[r].ja/t*100),{unit:'%',hint:'Het totaal is het aantal '+r+' ('+t+').',sol:k.v[r].ja+' ÷ '+t+' = '+fmt(r6(k.v[r].ja/t))+' → '+fmt(r6(k.v[r].ja/t*100))+'%'})}}},
+{t:'Welk diagram?',u:
+'<ul><li><b>Staafdiagram:</b> aantallen per groep vergelijken (aantal leerlingen per bloedgroep).</li><li><b>Cirkeldiagram:</b> delen van een geheel. Alle stukken samen zijn 100%.</li><li><b>Lijndiagram:</b> verandering in de tijd (temperatuur per maand).</li><li><b>Histogram:</b> een staafdiagram waarbij de staven tegen elkaar staan. Voor groepen van getallen, zoals leeftijden 0 tot 10, 10 tot 20 ...</li><li><b>Frequentietabel:</b> hoe vaak elke waarde voorkomt.</li><li><b>Kruistabel:</b> twee kenmerken tegelijk.</li></ul>',
+g:{1:function(){return bank(DB1)},2:function(){return bank(DB2)},3:function(){return bank(DB3)}}},
+{t:'Lineair of niet-lineair',u:
+'<p>Een taxi kost €3 om in te stappen en €2 per kilometer.</p>'+table(['km','0','1','2','3','4'],[['prijs (€)','3','5','7','9','11']])+
+'<p>Elke kilometer komt er <b>evenveel</b> bij (€2). Dat is een <b>lineair verband</b>. De grafiek is een <b>rechte lijn</b>.</p>'+
+'<p>Komt er niet telkens evenveel bij? Dan is het <b>niet-lineair</b> en is de grafiek een <b>kromme</b>. Bv. 1, 2, 4, 8, 16 (telkens verdubbelen).</p>'+
+'<h4>Een formule invullen</h4><p>'+M('prijs = 3 + 2 × km')+'. Voor 5 km: '+M('3 + 2 × 5 = 3 + 10 = 13')+'. Eerst maal, dan plus.</p>',
+g:{1:function(){var s=R(1,20),d=R(2,9);var lin=[0,1,2,3,4].map(function(i){return s+d*i}).join(', ');var x=R(1,4);var non1=[0,1,2,3,4].map(function(i){return x*Math.pow(2,i)}).join(', ');var non2=[0,1,2,3,4].map(function(i){return s+i*i}).join(', ');return mc('Welke rij getallen toont een lineair verband?',[lin,non1,non2],0,{hint:'Bij welke rij komt er telkens evenveel bij?',sol:'Bij '+lin+' komt er telkens '+d+' bij. Dat is lineair.'})},
+   2:function(){var s=R(1,20),d=R(2,12);var row=[0,1,2,3].map(function(i){return s+d*i});return N(table(['x','0','1','2','3','4'],[['y'].concat(row.map(String)).concat(['?'])])+'Het verband is lineair. Welk getal komt op het vraagteken?',s+4*d,{hint:'Hoeveel komt er telkens bij? Tel dat op bij '+row[3]+'.',sol:'Telkens +'+d+': '+row[3]+' + '+d+' = '+(s+4*d)})},
+   3:function(){var a=R(2,6),b=R(1,4)*0.5,x=R(4,20);return N('Een gsm-abonnement kost '+eur(a)+' per maand plus '+eur(b)+' per GB. De formule is: prijs = '+fmt(a)+' + '+fmt(b)+' × GB. Hoeveel betaal je als je '+x+' GB gebruikt?',r6(a+b*x),{unit:'€',hint:'Vul '+x+' in voor GB. Eerst maal, dan plus.',sol:fmt(b)+' × '+x+' = '+fmt(b*x)+', + '+a+' = '+eur(a+b*x)})}}}
+]});
+function bt(tot){var o=R(Math.round(tot*.3),Math.round(tot*.45)),a=R(Math.round(tot*.3),Math.round(tot*.42));var ab=R(1,Math.max(1,Math.round(tot*.06)));var b=tot-o-a-ab;if(b<1){a+=b-1;b=1}var v={O:o,A:a,B:b,AB:ab};return{v:v,tot:tot,html:'<p style="margin:0 0 8px;font-weight:400">Bloedgroepen in een groep van '+tot+' leerlingen:</p>'+table(['bloedgroep','O','A','B','AB','totaal'],[['aantal',o,a,b,ab,tot]])}}
+function lc(withConst){var s=R(0,6),v=[],t=R(1,6);for(var i=0;i<6;i++){v.push(t);t=Math.max(0,Math.min(24,t+R(-3,5)))}var ci=R(0,4);if(withConst&&Math.random()<.34)v[ci+1]=v[ci];var lab=MAAND.slice(s,s+6);return{v:v,lab:lab,ci:ci,html:lineChart(lab,v,'Gemiddelde temperatuur (°C)')}}
+function kt(){var n=pick([10,20,25]),m=pick([10,20,25]);var jj=R(1,n-1),mj=R(1,m-1);var v={jongens:{ja:jj,nee:n-jj},meisjes:{ja:mj,nee:m-mj}};return{v:v,html:table(['sport elke week?','ja','nee','totaal'],[['jongens',jj,n-jj,n],['meisjes',mj,m-mj,m]])}}
+function bank(B){var it=pick(B);return mc(it[0],it[1],0,{hint:it[2],sol:it[3]})}
+var DB1=[['Je wil tonen hoe de temperatuur verandert over een jaar. Welk diagram kies je?',['Lijndiagram','Cirkeldiagram','Kruistabel'],'Welk diagram toont verandering in de tijd?','Een lijndiagram toont verandering in de tijd.'],
+ ['Je wil tonen welk deel van je dag je slaapt, op school zit en vrij hebt (samen 100%). Welk diagram kies je?',['Cirkeldiagram','Lijndiagram','Histogram'],'Delen van een geheel ...','Een cirkeldiagram toont delen van een geheel.'],
+ ['Je wil het aantal leerlingen per bloedgroep vergelijken. Welk diagram kies je?',['Staafdiagram','Lijndiagram','Cirkeldiagram met getallen die niet optellen tot 100%'],'Aantallen per groep vergelijken.','Een staafdiagram vergelijkt aantallen per groep.']];
+var DB2=[['Bij welk diagram staan de staven tegen elkaar, voor groepen van getallen zoals leeftijd 0 tot 10, 10 tot 20 ...?',['Histogram','Staafdiagram','Lijndiagram'],'Het heeft staven die elkaar raken.','Een histogram.'],
+ ['Je wil tonen hoeveel jongens en hoeveel meisjes wel of niet sporten. Wat gebruik je?',['Kruistabel','Lijndiagram','Cirkeldiagram'],'Twee kenmerken tegelijk.','Een kruistabel toont twee kenmerken tegelijk.'],
+ ['Wat is de relatieve frequentie?',['Het deel van het totaal, meestal in procent','Het aantal keer dat iets voorkomt','Het grootste getal in een tabel'],'Relatief = ten opzichte van het geheel.','Relatieve frequentie = aantal ÷ totaal × 100.']];
+var DB3=[['In een cirkeldiagram is één stuk precies een kwart van de cirkel. Hoeveel procent is dat?',['25%','4%','40%'],'Een hele cirkel is 100%.','100% ÷ 4 = 25%.'],
+ ['Een klimatogram heeft staven en een lijn. Wat tonen de staven meestal?',['De neerslag in mm','De temperatuur in °C','Het aantal inwoners'],'De lijn is de temperatuur.','Staven = neerslag (mm), lijn = temperatuur (°C).'],
+ ['In een lijndiagram over 12 maanden ligt het hoogste punt in juli. Wat is juli?',['Het maximum','Het minimum','De periode'],'Hoogste punt = ...','Het hoogste punt is het maximum.']];
+
+/* LES 9 */
+L.push({t:'Kritisch kijken',d:'Misleidende grafieken herkennen, en het verschil tussen samenhang en oorzaak-gevolg.',parts:[
+{t:'Misleidende grafieken',u:
+'<p>Een grafiek kan een verschil groter of kleiner laten lijken dan het is. Deze twee grafieken tonen <b>exact dezelfde cijfers</b>: 96 en 99.</p>'+
+'<svg class="chart" viewBox="0 0 520 170" role="img" aria-label="Links met as vanaf 95 lijkt het verschil groot, rechts met as vanaf 0 klein"><g><text x="10" y="16">As begint bij 95: misleidend</text><line x1="40" y1="150" x2="230" y2="150" stroke="var(--line)"/><line x1="40" y1="30" x2="40" y2="150" stroke="var(--line)"/><rect x="70" y="120" width="50" height="30" fill="var(--muted)"/><rect x="150" y="40" width="50" height="110" fill="var(--warn)"/><text x="82" y="165">96</text><text x="162" y="165">99</text></g><g transform="translate(270,0)"><text x="10" y="16">As begint bij 0: eerlijk</text><line x1="40" y1="150" x2="230" y2="150" stroke="var(--line)"/><line x1="40" y1="30" x2="40" y2="150" stroke="var(--line)"/><rect x="70" y="35.2" width="50" height="114.8" fill="var(--muted)"/><rect x="150" y="31.6" width="50" height="118.4" fill="var(--accent)"/><text x="82" y="165">96</text><text x="162" y="165">99</text></g></svg>'+
+'<p>Controleer bij elke grafiek:</p><ol class="steps"><li>Begint de verticale as bij <b>0</b>?</li><li>Zijn de stappen op de as <b>even groot</b>?</li><li>Telt een cirkeldiagram op tot <b>100%</b>?</li><li>Staan er een <b>titel</b>, <b>eenheid</b> en <b>bron</b> bij?</li><li>Is er 3D of een tekening die moeilijk te vergelijken is?</li></ol>',
+g:{1:function(){return bank(MG1)},2:function(){return bank(MG2)},3:function(){return bank(MG3)}}},
+{t:'Samenhang of oorzaak en gevolg',u:
+'<p>Soms veranderen twee dingen tegelijk. Vraag je dan af: <b>zorgt het ene echt voor het andere?</b></p>'+
+'<ul><li><b>Causaliteit</b> (oorzaak en gevolg): het ene veroorzaakt het andere. Hoe langer de waterkoker aanstaat, hoe meer stroom hij verbruikt.</li><li><b>Samenhang</b>: twee dingen gaan samen omhoog of omlaag, maar het ene veroorzaakt het andere niet. Vaak is er een <b>derde oorzaak</b>.</li></ul>'+
+'<div class="ex"><b>Voorbeeld</b><p>In de zomer worden er meer ijsjes verkocht en zijn er meer verdrinkingen. IJsjes doen niemand verdrinken. De derde oorzaak is het warme weer: mensen eten meer ijs én gaan meer zwemmen. Dit is samenhang.</p></div>'+
+'<div class="tip">Stel jezelf de vraag: "Kan ik een derde oorzaak bedenken die allebei verklaart?" Ja? Dan is het waarschijnlijk samenhang.</div>',
+g:{1:function(){return sc(SC1)},2:function(){return sc(SC2)},3:function(){return sc(SC3)}}}
+]});
+var MG1=[['Een cirkeldiagram toont: 40% fiets, 35% auto, 30% bus. Wat klopt er niet?',['Samen is het meer dan 100%.','De bus is te groot getekend.','Er is geen kleur gebruikt.'],'Tel de procenten op.','40 + 35 + 30 = 105%. Samen moet het 100% zijn.'],
+ ['Een staafdiagram heeft een verticale as die begint bij 95. Wat is het gevolg?',['Kleine verschillen lijken heel groot.','De grafiek is makkelijker te lezen.','Er is geen probleem.'],'Kijk naar de grafiek in de uitleg.','Een kleine stap lijkt een grote stap als de as niet bij 0 begint.']];
+var MG2=[['Hoe los je een staafdiagram op waarvan de as begint bij 95?',['De as laten beginnen bij 0.','De staven een andere kleur geven.','Er een cirkeldiagram van maken.'],'Wat was er fout?','Laat de as bij 0 beginnen.'],
+ ['Een grafiek over het aantal inwoners heeft geen eenheid en geen titel. Waarom is dat een probleem?',['Je weet niet wat de getallen betekenen.','De grafiek is te klein.','Er zijn te veel kleuren.'],'Wat mis je om de grafiek te begrijpen?','Zonder titel en eenheid weet je niet wat de getallen betekenen.']];
+var MG3=[['Op een as staan de getallen 0, 10, 20, 50, 100 op gelijke afstand. Wat is het probleem?',['De stappen op de as zijn niet even groot.','De as begint niet bij 0.','Er is geen probleem.'],'Bekijk het verschil tussen de getallen.','Van 0 naar 10 is +10, van 20 naar 50 is +30. De stappen zijn niet gelijk.'],
+ ['Een reclame toont twee 3D-flessen: de ene twee keer zo hoog én twee keer zo breed als de andere, om te tonen dat er "2 keer meer" verkocht wordt. Wat is misleidend?',['De grote fles lijkt veel meer dan 2 keer zo groot.','Flessen zijn geen goede kleur.','Er staat geen bron bij de kleine fles.'],'Kijk naar de oppervlakte van de tekening, niet alleen de hoogte.','Twee keer zo hoog én breed lijkt 4 keer zo groot (of meer in 3D). Gebruik gewone staven.']];
+function sc(B){var it=pick(B);return mc(it[0],['Causaliteit (oorzaak en gevolg)','Samenhang'],it[1]?0:1,{hint:it[2],sol:it[3]})}
+var SC1=[['Hoe hoger de uv-index, hoe sneller je verbrandt.',true,'Veroorzaakt de uv-straling zelf de zonnebrand?','Uv-straling beschadigt de huid. Causaliteit.'],
+ ['Hoe meer je rookt, hoe groter de kans op longkanker.',true,'Is aangetoond dat roken de oorzaak is?','Onderzoek toont dat roken de oorzaak is. Causaliteit.'],
+ ['Hoe langer een lamp brandt, hoe meer stroom ze verbruikt.',true,'Zorgt het branden zelf voor het verbruik?','Causaliteit: energie = vermogen × tijd.']];
+var SC2=[['Kinderen met grotere voeten lezen beter.',false,'Lees je beter door grote voeten? Wat zorgt voor allebei?','Samenhang. De derde oorzaak is leeftijd.'],
+ ['Hoe meer brandweerwagens bij een brand, hoe groter de schade.',false,'Maken de brandweerwagens de schade?','Samenhang. Een grote brand zorgt voor allebei.'],
+ ['In de zomer worden er meer zonnebrillen en meer ijsjes verkocht.',false,'Kopen mensen ijs omdat ze een zonnebril kochten?','Samenhang. Het zonnige weer zorgt voor allebei.']];
+var SC3=[['Meer CO₂ in de lucht zorgt voor een hogere temperatuur op aarde.',true,'Denk aan het broeikaseffect.','Causaliteit: CO₂ houdt warmte vast (versterkt broeikaseffect).'],
+ ['In gemeenten met meer ooievaars worden meer baby\'s geboren.',false,'Brengen ooievaars baby\'s?','Samenhang. Op het platteland zijn er meer ooievaars en vaak grotere gezinnen.'],
+ ['Een zwangere vrouw die rookt, krijgt vaker een baby met een laag geboortegewicht.',true,'Wat doet roken met de zuurstof voor de baby?','Causaliteit: roken geeft de baby minder zuurstof.']];
+
+/* LES 10 */
+L.push({t:'Kansen',d:'Hoe groot is de kans dat iets gebeurt? Je hebt dit nodig bij erfelijkheid in biologie.',parts:[
+{t:'Een kans berekenen',u:
+'<p class="m" style="justify-self:start;white-space:normal">kans = wat je wil ÷ alles wat kan</p>'+
+'<ol class="steps"><li>Tel <b>alle</b> mogelijke uitkomsten. Een dobbelsteen: 1, 2, 3, 4, 5, 6 → 6.</li><li>Tel de uitkomsten die je <b>wil</b>. Een 6 gooien → 1.</li><li>Deel: kans = 1/6. Als procent: '+M('1 ÷ 6 × 100 ≈ 16,7%')+'.</li></ol>'+
+'<ul><li>Kans <b>0</b> (0%) = onmogelijk. Kans <b>1</b> (100%) = zeker.</li><li>Je kan een kans schrijven als breuk, kommagetal of procent.</li></ul>',
+g:{1:function(){var t=pick([10,20]),r=R(1,t-1);return N('In een zak zitten '+r+' rode en '+(t-r)+' blauwe knikkers. Je neemt er blind één. Hoeveel procent kans heb je op rood?',r6(r/t*100),{unit:'%',hint:'Alles wat kan: '+t+' knikkers. Wat je wil: '+r+'.',sol:r+' ÷ '+t+' = '+fmt(r6(r/t))+' → '+fmt(r6(r/t*100))+'%'})},
+   2:function(){var e=pick([['een even getal',3],['meer dan 4',2],['minder dan 3',2],['een 6',1],['meer dan 1',5],['een getal deelbaar door 3',2]]);return N('Je gooit een dobbelsteen. Wat is de kans op '+e[0]+'? Typ als breuk.',e[1]/6,{ph:'bv. 1/6',check:fracCheck(e[1]/6,false),hint:'Er zijn 6 mogelijke uitkomsten. Tel hoeveel er passen bij '+e[0]+'.',sol:e[1]+' van de 6 → '+e[1]+'/6'})},
+   3:function(){var t=pick([20,25,50]),r=R(2,Math.round(t/3)),g=R(2,Math.round(t/3)),b=t-r-g;return N('In een zak zitten '+r+' rode, '+g+' groene en '+b+' blauwe knikkers. Hoeveel procent kans heb je om <b>geen</b> rode te nemen?',r6((t-r)/t*100),{unit:'%',hint:'Geen rode = groen of blauw: '+g+' + '+b+'. Totaal: '+t+'.',sol:(g+b)+' ÷ '+t+' = '+fmt(r6((t-r)/t))+' → '+fmt(r6((t-r)/t*100))+'%'})}}},
+{t:'Kansen vergelijken',u:
+'<p>Welke kans is groter? Zet beide kansen in <b>dezelfde vorm</b>, bv. procent.</p>'+
+'<div class="ex"><b>Voorbeeld</b><p>Zak A: 3 rode van 10 knikkers → '+M('3 ÷ 10 = 30%')+'. Zak B: 5 rode van 20 → '+M('5 ÷ 20 = 25%')+'. In zak A is de kans op rood groter, ook al zitten er in B meer rode knikkers.</p></div>',
+g:{1:function(){return bag(10,10)},2:function(){return bag(10,20)},3:function(){return bag(20,25)}}},
+{t:'Kansen bij erfelijkheid',u:
+'<p>Je krijgt van elke ouder één gen. Een <b>hoofdletter</b> (B) is <b>dominant</b>: die wint. Een <b>kleine letter</b> (b) is <b>recessief</b>: die zie je alleen als je er twee hebt (bb).</p>'+
+'<p>Bv. B = bruine ogen, b = blauwe ogen. BB en Bb hebben bruine ogen. Alleen bb heeft blauwe ogen.</p>'+
+'<h4>Een kruisingsschema maken</h4><ol class="steps"><li>Zet de genen van de moeder links, die van de vader bovenaan.</li><li>Vul elk vakje in: één letter van links, één van boven.</li><li>Tel: er zijn altijd 4 vakjes. Elk vakje is 1/4 = 25% kans.</li></ol>'+
+punnett('Bb','Bb')+
+'<div class="ex"><b>Voorbeeld</b><p>Moeder Bb × vader Bb: BB, Bb, Bb, bb. Blauwe ogen (bb): 1 van 4 = 25%. Bruine ogen: 3 van 4 = 75%.</p></div>',
+g:{1:function(){return cross(1)},2:function(){return cross(2)},3:function(){return cross(3)}}}
+]});
+function bag(n1,n2){var a=R(1,n1-1),b=R(1,n2-1);while(Math.abs(a/n1-b/n2)<0.001&&n1!==n2)b=R(1,n2-1);var pa=a/n1,pb=b/n2;var ans=pa>pb?0:pa<pb?1:2;return mc('Zak A: '+a+' rode van de '+n1+' knikkers. Zak B: '+b+' rode van de '+n2+' knikkers. Uit welke zak heb je de meeste kans op rood?',['Zak A','Zak B','Even groot'],ans,{hint:'Bereken voor elke zak de kans in procent.',sol:'A: '+a+' ÷ '+n1+' = '+fmt(r6(pa*100))+'% · B: '+b+' ÷ '+n2+' = '+fmt(r6(pb*100))+'%. '+['Zak A','Zak B','Even groot'][ans]+'.'})}
+function punnett(m,v){var c=[[m[0]+v[0],m[0]+v[1]],[m[1]+v[0],m[1]+v[1]]].map(function(r){return r.map(function(x){return x.split('').sort(function(p,q){return p===p.toUpperCase()&&q!==q.toUpperCase()?-1:p!==p.toUpperCase()&&q===q.toUpperCase()?1:0}).join('')})});return '<div class="tw"><table class="pv"><tr><th></th><th>'+v[0]+' (vader)</th><th>'+v[1]+' (vader)</th></tr><tr><th>'+m[0]+' (moeder)</th><td>'+c[0][0]+'</td><td>'+c[0][1]+'</td></tr><tr><th>'+m[1]+' (moeder)</th><td>'+c[1][0]+'</td><td>'+c[1][1]+'</td></tr></table></div>'}
+function cells(m,v){var o=[];[m[0],m[1]].forEach(function(a){[v[0],v[1]].forEach(function(b){o.push([a,b].sort(function(p,q){return (p===p.toUpperCase()?0:1)-(q===q.toUpperCase()?0:1)}).join(''))})});return o}
+function cross(l){var pairs=[['Bb','Bb'],['Bb','bb'],['BB','bb'],['BB','Bb'],['bb','Bb']];var p=pick(pairs),cs=cells(p[0],p[1]);
+  if(l===1){var blauw=cs.filter(function(x){return x==='bb'}).length;return N('Moeder '+p[0]+' en vader '+p[1]+'. Het schema is al ingevuld:'+punnett(p[0],p[1])+'Hoeveel procent kans heeft een kind op blauwe ogen (bb)?',blauw*25,{unit:'%',hint:'Tel de vakjes met bb. Elk vakje is 25%.',sol:blauw+' van de 4 vakjes → '+(blauw*25)+'%'})}
+  if(l===2){var bruin=cs.filter(function(x){return x.indexOf('B')>-1}).length;return N('Moeder '+p[0]+' en vader '+p[1]+'. B (bruin) is dominant over b (blauw). Maak zelf het schema op je kladpapier. Hoeveel procent kans heeft een kind op <b>bruine</b> ogen?',bruin*25,{unit:'%',hint:'Bruine ogen: elk vakje met minstens één grote B.',sol:punnett(p[0],p[1])+bruin+' van de 4 vakjes hebben een B → '+(bruin*25)+'%'})}
+  var het=cs.filter(function(x){return x==='Bb'}).length;return N('Moeder '+p[0]+' en vader '+p[1]+'. Hoeveel procent kans heeft een kind op het <b>genotype</b> Bb?',het*25,{unit:'%',hint:'Genotype = de letters zelf. Tel de vakjes met precies Bb.',sol:punnett(p[0],p[1])+het+' van de 4 vakjes zijn Bb → '+(het*25)+'%'})}
+
+/* ---------- engine ---------- */
+var KEY='juju-wiskunde-v1',S={};
+try{S=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){S={}}
+S.p=S.p||{};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function pid(li,pi){return 'l'+li+'p'+pi}
+function prog(id){return S.p[id]||(S.p[id]=[0,0,0])}
+function partDone(id){var p=prog(id);return p[0]>=3&&p[1]>=3&&p[2]>=3}
+function lessonCount(li){var d=0,t=0;L[li].parts.forEach(function(_,pi){var p=prog(pid(li,pi));t+=9;d+=Math.min(3,p[0])+Math.min(3,p[1])+Math.min(3,p[2])});return[d,t]}
+
+var nav=document.getElementById('nav'),main=document.getElementById('main');
+function renderNav(){nav.innerHTML='';L.forEach(function(ls,li){var c=lessonCount(li);var b=document.createElement('button');b.type='button';b.setAttribute('aria-current',S.cur===li?'true':'false');if(c[0]===c[1])b.className='done';b.innerHTML='<span class="nr">'+(li+1)+'</span><span>'+ls.t+'</span><small>'+Math.round(c[0]/c[1]*100)+'% geoefend</small>';b.onclick=function(){S.cur=li;save();renderNav();renderLesson();window.scrollTo({top:main.offsetTop-20})};nav.appendChild(b)});
+  var d=0,t=0;L.forEach(function(_,li){var c=lessonCount(li);d+=c[0];t+=c[1]});var pc=Math.round(d/t*100);document.getElementById('pct').textContent=pc+'%';document.getElementById('barfill').style.width=pc+'%';document.getElementById('cnt').textContent='van de hele cursus geoefend'}
+
+function renderLesson(){
+  var li=S.cur||0,ls=L[li];main.innerHTML='';
+  var h=document.createElement('div');h.className='lesson-head';h.innerHTML='<div class="eyebrow">Les '+(li+1)+' van '+L.length+'</div><h2>'+ls.t+'</h2><p>'+ls.d+'</p>';main.appendChild(h);
+  ls.parts.forEach(function(pt,pi){
+    var id=pid(li,pi),sec=document.createElement('article');sec.className='sheet';
+    sec.innerHTML='<span class="tag">Deel '+(pi+1)+' van '+ls.parts.length+'</span><h3>'+pt.t+'</h3>'+videoHtml(li,pi)+pt.u;
+    var o=document.createElement('div');o.className='oefen';sec.appendChild(o);
+    main.appendChild(sec);practice(o,pt,id);
+  });
+  if(li<L.length-1){var nb=document.createElement('button');nb.className='btn next-lesson';nb.type='button';nb.textContent='Naar les '+(li+2)+': '+L[li+1].t;nb.onclick=function(){S.cur=li+1;save();renderNav();renderLesson();window.scrollTo({top:main.offsetTop-20})};main.appendChild(nb)}
+}
+
+function practice(box,pt,id){
+  var p=prog(id),lvl=p[0]<3?1:p[1]<3?2:3;
+  var top=document.createElement('div');top.className='oefen-top';
+  var title=document.createElement('strong');title.textContent='Oefen';
+  var lv=document.createElement('div');lv.className='lvls';
+  top.append(title,lv);
+  var card=document.createElement('div');card.className='card';
+  var note=document.createElement('div');note.className='lvlup';note.hidden=true;
+  box.append(top,note,card);
+  function drawLv(){lv.innerHTML='';[1,2,3].forEach(function(n){var b=document.createElement('button');b.type='button';b.className='lvbtn';b.setAttribute('aria-pressed',n===lvl);var dots='<span class="dots">'+[0,1,2].map(function(i){return '<i class="'+(i<Math.min(3,p[n-1])?'on':'')+'"></i>'}).join('')+'</span>';b.innerHTML='Niveau '+n+' '+dots;b.title=['Basis','Gemiddeld','Examenniveau'][n-1];b.onclick=function(){lvl=n;drawLv();newQ()};lv.appendChild(b)})}
+  function newQ(){
+    note.hidden=true;
+    var q=pt.g[lvl](),peeked=false,solved=false;
+    card.className='card';card.innerHTML='';
+    var qp=document.createElement('div');qp.className='q';qp.innerHTML=q.q;card.appendChild(qp);
+    var fb=document.createElement('p');fb.className='fb';fb.setAttribute('aria-live','polite');
+    var hintB=document.createElement('p');hintB.className='box';hintB.hidden=true;hintB.innerHTML='<b>Hint</b>'+q.hint;
+    var solB=document.createElement('div');solB.className='box';solB.hidden=true;solB.innerHTML='<b>Uitwerking</b>'+q.sol;
+    var row=document.createElement('div');row.className='row';
+    var help=document.createElement('div');help.className='row';
+    var bh=btn('Hint','ghost small',function(){hintB.hidden=!hintB.hidden});
+    var bs=btn('Toon uitwerking','ghost small',function(){solB.hidden=false;if(!solved){peeked=true;fb.className='fb';fb.textContent='Deze oefening telt niet meer mee. Probeer de volgende zelf.'}});
+    var bn=btn('Volgende oefening','',function(){newQ();focusFirst()});bn.hidden=true;
+    var skip=btn('Andere oefening','ghost small',function(){newQ();focusFirst()});
+    help.append(bh,bs,skip);
+    function ok(){if(solved)return;solved=true;card.classList.add('ok');bn.hidden=false;skip.hidden=true;
+      if(peeked){fb.className='fb ok';fb.textContent='Juist. Deze telt niet mee omdat je de uitwerking bekeek.';bn.focus();return}
+      p[lvl-1]++;save();onCorrect(id);var msg='Juist! Goed gedaan.';
+      if(p[lvl-1]===3){if(lvl<3){msg='Juist! Niveau '+lvl+' is klaar.';note.hidden=false;note.textContent='Knap! Je gaat nu naar niveau '+(lvl+1)+'.';lvl++}else{msg='Juist! Je beheerst dit deel.';note.hidden=false;note.textContent='Dit deel is helemaal klaar. Oefen gerust verder of ga naar het volgende deel.'}}
+      fb.className='fb ok';fb.textContent=msg;tone(msg==='Juist! Goed gedaan.'?OK:LVL);drawLv();renderNav();bn.focus()}
+    function no(m){fb.className='fb no';fb.textContent=m||'Nog niet juist. Probeer opnieuw of open de hint.'}
+    if(q.opts){q.opts.forEach(function(o){var b=document.createElement('button');b.type='button';b.className='opt';b.innerHTML=o.t;b.onclick=function(){if(solved)return;if(o.k===q.ans){b.classList.add('right');ok()}else{b.classList.add('wrong');no()}};row.appendChild(b)})}
+    else{
+      var inp=document.createElement('input');inp.type='text';inp.setAttribute('inputmode',q.check?'text':'decimal');inp.setAttribute('autocomplete','off');inp.setAttribute('aria-label','Jouw antwoord');inp.id=id+'-in';if(q.ph)inp.placeholder=q.ph;
+      var un=document.createElement('span');un.className='unit';un.textContent=q.unit||'';
+      var bc=btn('Controleer','',check);
+      function check(){if(solved)return;var raw=inp.value.trim();if(!raw){no('Typ eerst je antwoord.');return}
+        if(q.check){var r=q.check(raw);if(r===true)ok();else no(typeof r==='string'?r:null);return}
+        var v=parseNum(raw);if(isNaN(v)){no('Typ een getal.');return}
+        var a=q.ans,tol=q.tol!=null?q.tol:Math.max(1e-6,Math.abs(a)*1e-6);
+        if(Math.abs(v-a)<=tol){ok();return}
+        if(a!==0&&Math.abs(v+a)<=tol){no('Bijna! Kijk naar het minteken.');return}
+        var f=[10,100,1000,1e5,1e6];for(var i=0;i<f.length;i++){if(Math.abs(v-a*f[i])<=tol*f[i]||Math.abs(v*f[i]-a)<=tol){no('Bijna! De cijfers kloppen, maar de komma staat niet goed. Kijk nog eens: maal of gedeeld door '+fmt(f[i])+'?');return}}
+        no()}
+      inp.addEventListener('keydown',function(e){if(e.key==='Enter'){if(solved){newQ();focusFirst()}else check()}});
+      row.append(inp,un,bc);
+    }
+    card.append(row,fb,bn,help,hintB,solB);
+  }
+  function focusFirst(){var i=card.querySelector('input,.opt');if(i)i.focus({preventScroll:true})}
+  drawLv();newQ();
+}
+function btn(t,cls,fn){var b=document.createElement('button');b.type='button';b.className='btn '+cls;b.textContent=t;b.onclick=fn;return b}
+
+/* ---------- videos, sound, timer, daily goal ---------- */
+var V=[
+ [['Sqee-b-0OIk','Decimale getallen (kommagetallen) uitgelegd'],['zcndIxyGDcI','Kommagetallen vermenigvuldigen en delen met 10, 100 en 1000'],['DilKAV0QsN4','Negatieve getallen optellen en aftrekken'],['7ekvs5LoWIk','De volgorde van de bewerkingen']],
+ [['y8ih8LDBqdc','Wat is een breuk?'],['gX-3L1FuzTQ','Breuk omzetten naar decimaal getal'],['joTG9EUdOWQ','Breuken vereenvoudigen'],['aAeor7ELHm8','Breuk van een getal berekenen']],
+ [['epDuTeceIgE','Wat hebben procenten en breuken met elkaar te maken?'],['kxqGAru38KY','Percentage van een getal berekenen'],['qLkuM6f1rXo','Hoe bereken je een percentage?'],['6uUsrirvz34','Breuken, kommagetallen en procenten']],
+ [['zxkRDZq111g','Verhoudingstabel in 8 makkelijke stappen'],['dgw7W7_GS8c','Rekenen met schaal']],
+ [['sdYxIowkQgw','Afronden van decimale getallen'],null,['szRBbSnmWts','Schattend rekenen']],
+ [['pXPMPApD5V4','Lengtematen omrekenen'],['Iow5imLG8BI','Oppervlaktematen omrekenen']],
+ [['TgZBc9nmVx4','Tijd omrekenen: seconden, minuten, uren'],['_y1OYv70lBw','m/s omrekenen naar km/h, stap voor stap'],['4OX2pbIRHAQ','Snelheid, afstand en tijd berekenen']],
+ [['ZnZdyE-AHyg','Absolute en relatieve frequentie'],['yLntGfZe3zU','Lijngrafiek'],['YzKY8-HFz6s','Tabellen: kruistabel'],['4uaCyFvj5cw','Soorten grafieken en diagrammen'],['4V32pFHFNF4','Lineair verband vanuit een tabel']],
+ [['_L2wwDeYyug','De grafiekpolitie: foute grafieken'],['Dd7w-8453H4','Correlatie en causaliteit']],
+ [['MUsxSL-_inE','Kans berekenen'],null,['2P8cztbI8dk','Erfelijkheid: kruisingsschema']]
+];
+var PLAY='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--accent)"/><path d="M10 7.5v9l7-4.5z" fill="var(--paper)"/></svg>';
+function videoHtml(li,pi){var v=V[li]&&V[li][pi];if(!v)return '';return '<p class="video">'+PLAY+'<span>Liever eerst kijken? <a href="https://www.youtube.com/watch?v='+v[0]+'" target="_blank" rel="noopener">'+v[1]+'</a> <span class="muted">(YouTube, opent in een nieuw tabblad)</span></span></p>'}
+
+S.sound=S.sound!==false;S.days=S.days||{};S.log=S.log||[];
+var GOAL=10,SESS_MIN=15,OK=[[660,880],0.08],LVL=[[523,659,784,1047],0.1],END=[[784,659,523,659,784],0.16];
+var AC=null;
+function tone(spec){if(!S.sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();var t=AC.currentTime,dur=spec[1];spec[0].forEach(function(f,i){var o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;var s=t+i*dur;g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(0.1,s+0.02);g.gain.exponentialRampToValueAtTime(0.0001,s+dur*1.8);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+dur*2)})}catch(e){}}
+function dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function streak(){var n=0,d=new Date();if((S.days[dkey(d)]||0)<GOAL)d.setDate(d.getDate()-1);while((S.days[dkey(d)]||0)>=GOAL){n++;d.setDate(d.getDate()-1)}return n}
+function partName(id){var m=id.match(/l(\d+)p(\d+)/);return 'Les '+(+m[1]+1)+': '+L[+m[1]].parts[+m[2]].t}
+var toastEl=document.getElementById('toast'),toastT;
+function toast(t){toastEl.textContent=t;toastEl.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){toastEl.hidden=true},3500)}
+
+function renderStudy(){
+  var t=S.days[dkey(new Date())]||0;
+  document.getElementById('goal').textContent='Vandaag '+Math.min(t,GOAL)+' / '+GOAL+' juist'+(t>=GOAL?' · doel gehaald':'');
+  document.getElementById('goalfill').style.width=Math.min(100,t/GOAL*100)+'%';
+  var s=streak();document.getElementById('streak').textContent=s+(s===1?' dag':' dagen')+' na elkaar';
+  var sb=document.getElementById('soundbtn');sb.textContent=S.sound?'Geluid aan':'Geluid uit';sb.setAttribute('aria-pressed',S.sound);
+  var lg=document.getElementById('log');
+  if(!S.log.length){lg.innerHTML='<p class="muted">Nog geen studiesessies. Start een sessie bovenaan.</p>'}
+  else lg.innerHTML='<div class="tw"><table><tr><th>Datum</th><th>Minuten</th><th>Juist</th><th>Geoefende delen</th></tr>'+S.log.slice(-12).reverse().map(function(r){return '<tr><td>'+r.d.split('-').reverse().join('/')+'</td><td>'+r.min+'</td><td>'+r.ok+'</td><td>'+(r.parts.length?r.parts.join('<br>'):'-')+'</td></tr>'}).join('')+'</table></div>';
+}
+function onCorrect(id){
+  var k=dkey(new Date());S.days[k]=(S.days[k]||0)+1;
+  if(S.sess){S.sess.ok++;if(S.sess.parts.indexOf(id)<0)S.sess.parts.push(id)}
+  save();renderStudy();
+  if(S.days[k]===GOAL){setTimeout(function(){tone(LVL)},250);toast('Dagdoel gehaald! '+GOAL+' oefeningen juist vandaag.')}
+  updateBar();
+}
+var bar=document.getElementById('sessbar'),iv=null;
+function startSess(){S.sess={start:Date.now(),ok:0,parts:[]};save();closeModal();runSess()}
+function runSess(){bar.hidden=false;document.body.classList.add('insess');document.getElementById('startbtn').hidden=true;clearInterval(iv);iv=setInterval(updateBar,1000);updateBar()}
+function updateBar(){if(!S.sess)return;var left=SESS_MIN*60-Math.floor((Date.now()-S.sess.start)/1000);if(left<=0){endSess(true);return}document.getElementById('sesstime').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');document.getElementById('sessok').textContent=S.sess.ok+' juist deze sessie'}
+function endSess(byTimer){if(!S.sess)return;clearInterval(iv);var s=S.sess,min=Math.max(1,Math.round(Math.min(SESS_MIN*60,(Date.now()-s.start)/1000)/60));var parts=s.parts.map(partName);S.log.push({d:dkey(new Date(s.start)),min:min,ok:s.ok,parts:parts});if(S.log.length>60)S.log=S.log.slice(-60);S.sess=null;save();
+  bar.hidden=true;document.body.classList.remove('insess');document.getElementById('startbtn').hidden=false;renderStudy();
+  if(byTimer)tone(END);
+  var t=S.days[dkey(new Date())]||0;
+  openModal('<h3>'+(byTimer?'Tijd voor een pauze':'Sessie gestopt')+'</h3>'+(byTimer?'<p>Je hebt 15 minuten gewerkt. Sta even recht, drink iets en neem 5 minuten pauze.</p>':'')+
+    '<div class="tw"><table><tr><th>Gewerkt</th><td>'+min+' min</td></tr><tr><th>Juist deze sessie</th><td>'+s.ok+'</td></tr><tr><th>Vandaag in totaal</th><td>'+t+' juist (doel '+GOAL+')</td></tr><tr><th>Geoefend</th><td>'+(parts.length?parts.join('<br>'):'-')+'</td></tr></table></div>',true)}
+var modal=document.getElementById('modal');
+function openModal(html,withNew){modal.querySelector('.mbody').innerHTML=html;modal.querySelector('#newsess').hidden=!withNew;modal.hidden=false;modal.querySelector('button').focus()}
+function closeModal(){modal.hidden=true}
+document.getElementById('startbtn').onclick=startSess;
+document.getElementById('stopbtn').onclick=function(){endSess(false)};
+document.getElementById('newsess').onclick=startSess;
+document.getElementById('closemodal').onclick=closeModal;
+modal.addEventListener('click',function(e){if(e.target===modal)closeModal()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!modal.hidden)closeModal()});
+document.getElementById('soundbtn').onclick=function(){S.sound=!S.sound;save();renderStudy();if(S.sound)tone(OK)};
+if(S.sess){if(Date.now()-S.sess.start>=SESS_MIN*60000)endSess(true);else runSess()}
+renderStudy();
+
+if(typeof S.cur!=='number'||S.cur<0||S.cur>=L.length)S.cur=0;
+renderNav();renderLesson();
+})();
+</script>
+
+</body>
+</html>
